@@ -65,6 +65,11 @@ class DANN:
                 pred_class = self.classifier(src_z)
                 class_loss = self.class_criterion(pred_class, src_label)
 
+                ''' classify accuracy '''
+                _, predicted = torch.max(pred_class, 1)
+                accuracy = 100.0 * \
+                    (predicted == src_label).sum() / src_data.size(0)
+
                 pred_d_src = self.discriminator(src_z, p)
                 pred_d_tar = self.discriminator(tar_z, p)
 
@@ -73,7 +78,6 @@ class DANN:
                 d_loss_tar = self.domain_criterion(pred_d_tar, torch.ones(
                     tar_z.size(0)).type(torch.LongTensor).cuda())
 
-
                 domain_loss = d_loss_src + d_loss_tar
 
                 loss = class_loss + domain_loss
@@ -81,8 +85,9 @@ class DANN:
                 self.opt.step()
 
                 if index % self.log_interval == 0:
-                    print("[Epoch {:3d}] Total_loss: {:.4f} \t C_loss: {:.4f} \t D_loss:{:.4f}".format(epoch, loss,
-                                                                                                       class_loss, domain_loss))
+                    print("[Epoch {:3d}] Total_loss: {:.4f}   C_loss: {:.4f}   D_loss:{:.4f}".format(
+                        epoch, loss, class_loss, domain_loss))
+                    print("Classifier Accuracy: {:.2f}\n".format(accuracy))
 
     def test(self):
         print("[Testing]")
@@ -97,15 +102,21 @@ class DANN:
         except:
             os.mkdir(path)
 
-        torch.save(self.extractor.state_dict(), os.path.join(path, "DANN_E.pkl"))
-        torch.save(self.classifier.state_dict(), os.path.join(path, "DANN_C.pkl"))
-        torch.save(self.discriminator.state_dict(), os.path.join(path, "DANN_D.pkl"))
+        torch.save(self.extractor.state_dict(),
+                   os.path.join(path, "DANN_E.pkl"))
+        torch.save(self.classifier.state_dict(),
+                   os.path.join(path, "DANN_C.pkl"))
+        torch.save(self.discriminator.state_dict(),
+                   os.path.join(path, "DANN_D.pkl"))
 
     def load_model(self, path="./saved_DANN/"):
 
-        self.extractor.load_state_dict(torch.load(os.path.join(path, "DANN_E.pkl")))
-        self.classifier.load_state_dict(torch.load(os.path.join(path, "DANN_C.pkl")))
-        self.discriminator.load_state_dict(torch.load(os.path.join(path, "DANN_D.pkl")))
+        self.extractor.load_state_dict(
+            torch.load(os.path.join(path, "DANN_E.pkl")))
+        self.classifier.load_state_dict(
+            torch.load(os.path.join(path, "DANN_C.pkl")))
+        self.discriminator.load_state_dict(
+            torch.load(os.path.join(path, "DANN_D.pkl")))
 
     def visualize(self, dim=2, plot_num=1000):
         print("t-SNE reduces to dimension {}".format(dim))

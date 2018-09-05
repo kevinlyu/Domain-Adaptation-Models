@@ -39,8 +39,8 @@ class Extractor(nn.Module):
             nn.Conv2d(3, self.in_channels*1, kernel_size=5, padding=1),
             nn.BatchNorm2d(self.in_channels*1),
             nn.MaxPool2d(2),
-            # nn.LeakyReLU(self.lrelu_slope),
-            nn.ReLU(),
+            nn.LeakyReLU(self.lrelu_slope),
+            #nn.ReLU(),
             nn.Conv2d(self.in_channels*1, self.in_channels *
                       4, kernel_size=5, padding=1),
             nn.BatchNorm2d(self.in_channels*4),
