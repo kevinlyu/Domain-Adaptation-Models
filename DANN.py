@@ -20,6 +20,8 @@ class DANN:
 
         self.src_loader = dataloaderes["source_loader"]
         self.tar_loader = dataloaderes["target_loader"]
+        self.test_src_loader = dataloaderes["test_src_loader"]
+        self.test_tar_loader = dataloaderes["test_tar_loader"]
 
         self.total_epoch = total_epoch
         self.log_interval = log_interval
@@ -92,10 +94,39 @@ class DANN:
     def test(self):
         print("[Testing]")
 
-        self.extractor.eval()
-        self.classifer.eval()
-        self.discriminator.eval()
+        self.extractor.cuda().eval()
+        self.classifier.cuda().eval()
 
+        src_correct = 0
+        tar_correct = 0
+
+        for index, (src, tar) in enumerate(zip(self.test_src_loader, self.test_tar_loader)):
+            src_data, src_label = src
+            tar_data, tar_label = tar
+
+            ''' for MNIST '''
+            if src_data.shape[1] != 3:
+                src_data = src_data.expand(
+                src_data.shape[0], 3, self.img_size, self.img_size)
+
+            src_data, src_label = src_data.cuda(), src_label.cuda()
+            tar_data, tar_label = tar_data.cuda(), tar_label.cuda()
+
+            src_z = self.extractor(src_data)
+            tar_z = self.extractor(tar_data)
+
+            src_pred = self.classifier(src_z)
+            tar_pred = self.classifier(tar_z)
+
+            _, predicted = torch.max(src_pred, 1)
+            src_correct += (predicted == src_label).sum()
+
+            _, predicted = torch.max(tar_pred, 1)
+            tar_correct += (predicted == tar_label).sum()
+        
+        print("source accuracy: {:.2f}".format(src_correct/len(self.test_src_loader)))
+        print("target accuracy: {:.2f}".format(tar_correct/len(self.test_tar_loader)))
+            
     def save_model(self, path="./saved_DANN/"):
         try:
             os.stat(path)

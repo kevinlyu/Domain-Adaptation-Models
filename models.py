@@ -40,7 +40,7 @@ class Extractor(nn.Module):
             nn.BatchNorm2d(self.in_channels*1),
             nn.MaxPool2d(2),
             nn.LeakyReLU(self.lrelu_slope),
-            #nn.ReLU(),
+            # nn.ReLU(),
             nn.Conv2d(self.in_channels*1, self.in_channels *
                       4, kernel_size=5, padding=1),
             nn.BatchNorm2d(self.in_channels*4),
@@ -50,17 +50,15 @@ class Extractor(nn.Module):
             # nn.LeakyReLU(self.lrelu_slope)
         )
 
-        '''
         self.fc = nn.Sequential(
             nn.Linear(self.in_channels*4*5*5, self.encoded_dim),
             nn.ReLU()
         )
-        '''
 
     def forward(self, x):
         z = self.extract(x)
         z = z.view(-1, 64*5*5)
-        #z = self.fc(z)
+        z = self.fc(z)
 
         return z
 
@@ -75,7 +73,7 @@ class Classifier(nn.Module):
         self.class_num = class_num
 
         self.classify = nn.Sequential(
-            nn.Linear(64*5*5, 100),
+            nn.Linear(self.encoded_dim, 100),
             nn.BatchNorm1d(100),
             nn.ReLU(),
             # added
@@ -99,7 +97,7 @@ class Discriminator(nn.Module):
         self.encoded_dim = encoded_dim
 
         self.classify = nn.Sequential(
-            nn.Linear(64*5*5, 64),
+            nn.Linear(self.encoded_dim, 64),
             nn.BatchNorm1d(64),
             nn.ReLU(),
             nn.Linear(64, 2),
