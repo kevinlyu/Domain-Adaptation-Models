@@ -7,20 +7,21 @@ class GradReverse(torch.autograd.Function):
     Gradient Reversal Layer
     '''
     @staticmethod
-    def forward(ctx, x):
+    def forward(ctx, x, constant):
+        ctx.constant = constant
         return x.view_as(x)
 
     @staticmethod
     def backward(ctx, grad_output):
-        grad_output = grad_output.neg()*0.5
+        grad_output = grad_output.neg()*ctx.constant
         return grad_output, None
 
     # pylint raise E0213 warning here
-    def grad_reverse(x):
+    def grad_reverse(x, constant):
         '''
         Extension of grad reverse layer
         '''
-        return GradReverse.apply(x)
+        return GradReverse.apply(x, constant)
 
 
 class Extractor(nn.Module):
@@ -35,26 +36,31 @@ class Extractor(nn.Module):
         self.encoded_dim = encoded_dim
 
         self.extract = nn.Sequential(
-            nn.Conv2d(3, self.in_channels*1, kernel_size=3, padding=1),
+            nn.Conv2d(3, self.in_channels*1, kernel_size=5, padding=1),
             nn.BatchNorm2d(self.in_channels*1),
             nn.MaxPool2d(2),
-            nn.LeakyReLU(self.lrelu_slope),
+            # nn.LeakyReLU(self.lrelu_slope),
+            nn.ReLU(),
             nn.Conv2d(self.in_channels*1, self.in_channels *
-                      4, kernel_size=3, padding=1),
+                      4, kernel_size=5, padding=1),
             nn.BatchNorm2d(self.in_channels*4),
+            # added
+            nn.Dropout2d(),
             nn.MaxPool2d(2),
-            nn.LeakyReLU(self.lrelu_slope)
+            # nn.LeakyReLU(self.lrelu_slope)
         )
 
+        '''
         self.fc = nn.Sequential(
-            nn.Linear(self.in_channels*4*7*7, self.encoded_dim),
+            nn.Linear(self.in_channels*4*5*5, self.encoded_dim),
             nn.ReLU()
         )
+        '''
 
     def forward(self, x):
         z = self.extract(x)
-        z = z.view(z.shape[0], self.in_channels*4*7*7)
-        z = self.fc(z)
+        z = z.view(-1, 64*5*5)
+        #z = self.fc(z)
 
         return z
 
@@ -69,13 +75,15 @@ class Classifier(nn.Module):
         self.class_num = class_num
 
         self.classify = nn.Sequential(
-            nn.Linear(self.encoded_dim, 64),
-            nn.BatchNorm1d(64),
+            nn.Linear(64*5*5, 100),
+            nn.BatchNorm1d(100),
             nn.ReLU(),
-            nn.Linear(64, 32),
-            nn.BatchNorm1d(32),
+            # added
+            nn.Dropout(),
+            nn.Linear(100, 50),
+            nn.BatchNorm1d(50),
             nn.ReLU(),
-            nn.Linear(32, self.class_num),
+            nn.Linear(50, self.class_num),
             nn.LogSoftmax()
         )
 
@@ -91,16 +99,13 @@ class Discriminator(nn.Module):
         self.encoded_dim = encoded_dim
 
         self.classify = nn.Sequential(
-            nn.Linear(self.encoded_dim, 64),
+            nn.Linear(64*5*5, 64),
             nn.BatchNorm1d(64),
             nn.ReLU(),
-            nn.Linear(64, 32),
-            nn.BatchNorm1d(32),
-            nn.ReLU(),
-            nn.Linear(32, 2),
-            nn.LogSoftmax()
+            nn.Linear(64, 2),
+            nn.LogSoftmax(1)
         )
 
-    def forward(self, x):
-        x = GradReverse.grad_reverse(x)
+    def forward(self, x, constant):
+        x = GradReverse.grad_reverse(x, constant)
         return self.classify(x)

@@ -17,7 +17,7 @@ class DANN:
         self.domain_criterion = criterions["domain"]
 
         self.opt = optimizers["opt"]
-        
+
         self.src_loader = dataloaderes["source_loader"]
         self.tar_loader = dataloaderes["target_loader"]
 
@@ -29,8 +29,17 @@ class DANN:
 
     def train(self):
         print("[Training]")
+
         for epoch in range(self.total_epoch):
+
+            start_steps = epoch*len(self.src_loader)
+            total_steps = self.total_epoch*len(self.tar_loader)
+
             for index, (src, tar) in enumerate(zip(self.src_loader, self.tar_loader)):
+
+                p = float(index + start_steps)/total_steps
+                constant = 2.0 / (1.0+np.exp(-10*p))-1
+
                 src_data, src_label = src
                 tar_data, tar_label = tar
 
@@ -47,7 +56,7 @@ class DANN:
                 tar_data, tar_label = tar_data.cuda(), tar_label.cuda()
 
                 """ train classifer """
-                
+
                 self.opt.zero_grad()
 
                 src_z = self.extractor(src_data)
@@ -55,22 +64,25 @@ class DANN:
 
                 pred_class = self.classifier(src_z)
                 class_loss = self.class_criterion(pred_class, src_label)
-                
-                pred_d_src = self.discriminator(src_z)
-                pred_d_tar = self.discriminator(tar_z)
 
-                d_loss_src = self.domain_criterion(pred_d_src, torch.zeros(src_z.size(0)).type(torch.LongTensor).cuda())
-                d_loss_tar = self.domain_criterion(pred_d_tar, torch.ones(tar_z.size(0)).type(torch.LongTensor).cuda())
+                pred_d_src = self.discriminator(src_z, p)
+                pred_d_tar = self.discriminator(tar_z, p)
 
-                domain_loss = d_loss_src + d_loss_tar             
-                
+                d_loss_src = self.domain_criterion(pred_d_src, torch.zeros(
+                    src_z.size(0)).type(torch.LongTensor).cuda())
+                d_loss_tar = self.domain_criterion(pred_d_tar, torch.ones(
+                    tar_z.size(0)).type(torch.LongTensor).cuda())
+
+
+                domain_loss = d_loss_src + d_loss_tar
+
                 loss = class_loss + domain_loss
                 loss.backward()
                 self.opt.step()
 
                 if index % self.log_interval == 0:
-                    print("[Epoch {:3d}] \t C_loss: {:.4f} \t D_loss:{:.4f}".format(epoch,
-                                                                                class_loss, domain_loss))
+                    print("[Epoch {:3d}] Total_loss: {:.4f} \t C_loss: {:.4f} \t D_loss:{:.4f}".format(epoch, loss,
+                                                                                                       class_loss, domain_loss))
 
     def test(self):
         print("[Testing]")
@@ -85,15 +97,15 @@ class DANN:
         except:
             os.mkdir(path)
 
-        torch.save(self.extractor, os.path.join(path, "DANN_E.pkl"))
-        torch.save(self.classifier, os.path.join(path, "DANN_C.pkl"))
-        torch.save(self.discriminator, os.path.join(path, "DANN_D.pkl"))
+        torch.save(self.extractor.state_dict(), os.path.join(path, "DANN_E.pkl"))
+        torch.save(self.classifier.state_dict(), os.path.join(path, "DANN_C.pkl"))
+        torch.save(self.discriminator.state_dict(), os.path.join(path, "DANN_D.pkl"))
 
     def load_model(self, path="./saved_DANN/"):
 
-        self.extractor.load_state_dict(torch.load(path, "DANN_E.pkl"))
-        self.classifier.load_state_dict(torch.load(path, "DANN_C.pkl"))
-        self.discriminator.load_state_dict(torch.load(path, "DANN_D.pkl"))
+        self.extractor.load_state_dict(torch.load(os.path.join(path, "DANN_E.pkl")))
+        self.classifier.load_state_dict(torch.load(os.path.join(path, "DANN_C.pkl")))
+        self.discriminator.load_state_dict(torch.load(os.path.join(path, "DANN_D.pkl")))
 
     def visualize(self, dim=2, plot_num=1000):
         print("t-SNE reduces to dimension {}".format(dim))
@@ -105,7 +117,7 @@ class DANN:
 
         ''' If use USPS dataset, change it to IntTensor() '''
         src_label = torch.LongTensor()
-        tar_label = torch.IntTensor()
+        tar_label = torch.LongTensor()
 
         for index, src in enumerate(self.src_loader):
             data, label = src
