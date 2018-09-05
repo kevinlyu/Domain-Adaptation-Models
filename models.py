@@ -2,6 +2,27 @@ import torch
 import torch.nn as nn
 
 
+class GradReverse(torch.autograd.Function):
+    '''
+    Gradient Reversal Layer
+    '''
+    @staticmethod
+    def forward(ctx, x):
+        return x.view_as(x)
+
+    @staticmethod
+    def backward(ctx, grad_output):
+        grad_output = grad_output.neg()*0.5
+        return grad_output, None
+
+    # pylint raise E0213 warning here
+    def grad_reverse(x):
+        '''
+        Extension of grad reverse layer
+        '''
+        return GradReverse.apply(x)
+
+
 class Extractor(nn.Module):
     ''' Feature extractor '''
 
@@ -66,6 +87,7 @@ class Discriminator(nn.Module):
     ''' Domain Discriminator '''
 
     def __init__(self, encoded_dim):
+        super(Discriminator, self).__init__()
         self.encoded_dim = encoded_dim
 
         self.classify = nn.Sequential(
@@ -76,8 +98,9 @@ class Discriminator(nn.Module):
             nn.BatchNorm1d(32),
             nn.ReLU(),
             nn.Linear(32, 2),
-            nn.Softmax()
+            nn.LogSoftmax()
         )
 
     def forward(self, x):
+        x = GradReverse.grad_reverse(x)
         return self.classify(x)
