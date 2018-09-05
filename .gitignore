@@ -1,4 +1,5 @@
 *.pdf
+*.png
 test.py
 *.pyc
 *.pkl
