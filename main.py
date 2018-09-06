@@ -45,7 +45,7 @@ test_tar_loader = torch.utils.data.DataLoader(USPS(
 
 extractor = Extractor(encoded_dim=feature_dim).cuda()
 classifier = Classifier(encoded_dim=feature_dim).cuda()
-discriminator = Discriminator(encoded_dim=feature_dim).cuda()
+discriminator = Discriminator_GRL(encoded_dim=feature_dim).cuda()
 
 class_criterion = nn.NLLLoss()
 domain_criterion = nn.NLLLoss()

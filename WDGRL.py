@@ -5,24 +5,25 @@ import os
 import numpy as np
 from utils import *
 from dataloaders import *
-from models imporrt *
+from models import *
+
 
 class WDGRL:
 
-    def __init__(self, components, optimizers, dataloaderes, criterions, total_epoch, feature_dim, class_num, log_interval):
+    def __init__(self, components, optimizers, dataloaders, criterions, total_epoch, feature_dim, class_num, log_interval):
         self.extractor = components["extractor"]
         self.classifier = components["classifier"]
         self.discriminator = components["discriminator"]
 
         self.class_criterion = criterions["class"]
-        self.domain_criterion = criterions["domain"]
 
-        self.opt = optimizers["opt"]
+        self.c_opt = optimizers["c_opt"]
+        self.d_opt = optimizers["d_opt"]
 
-        self.src_loader = dataloaderes["source_loader"]
-        self.tar_loader = dataloaderes["target_loader"]
-        self.test_src_loader = dataloaderes["test_src_loader"]
-        self.test_tar_loader = dataloaderes["test_tar_loader"]
+        self.src_loader = dataloaders["source_loader"]
+        self.tar_loader = dataloaders["target_loader"]
+        self.test_src_loader = dataloaders["test_src_loader"]
+        self.test_tar_loader = dataloaders["test_tar_loader"]
 
         self.total_epoch = total_epoch
         self.log_interval = log_interval
@@ -35,13 +36,7 @@ class WDGRL:
 
         for epoch in range(self.total_epoch):
 
-            start_steps = epoch*len(self.src_loader)
-            total_steps = self.total_epoch*len(self.tar_loader)
-
             for index, (src, tar) in enumerate(zip(self.src_loader, self.tar_loader)):
-
-                p = float(index + start_steps)/total_steps
-                constant = 2.0 / (1.0+np.exp(-10*p))-1
 
                 src_data, src_label = src
                 tar_data, tar_label = tar
@@ -60,7 +55,8 @@ class WDGRL:
 
                 """ train classifer """
 
-                self.opt.zero_grad()
+                set_requires_grad(self.extractor, requires_grad=True)
+                set_requires_grad(self.discriminator, requires_grad=False)
 
                 src_z = self.extractor(src_data)
                 tar_z = self.extractor(tar_data)
@@ -68,28 +64,42 @@ class WDGRL:
                 pred_class = self.classifier(src_z)
                 class_loss = self.class_criterion(pred_class, src_label)
 
+                wasserstein_diatance = self.discriminator(
+                    src_z).mean() - self.discriminator(tar_z).mean()
+
+                loss = class_loss + wasserstein_diatance
+                c_opt.zero_grad()
+                loss.backward()
+                c_opt.step()
+
                 ''' classify accuracy '''
                 _, predicted = torch.max(pred_class, 1)
                 accuracy = 100.0 * \
                     (predicted == src_label).sum() / src_data.size(0)
 
-                pred_d_src = self.discriminator(src_z, p)
-                pred_d_tar = self.discriminator(tar_z, p)
-
                 """ train discriminator """
+
+                set_requires_grad(self.extractor, requires_grad=False)
+                set_requires_grad(self.discriminator, requires_grad=True)
+
                 with torch.no_grad():
                     src_z = self.extractor(src_data)
                     tar_z = self.extractor(tar_data)
-                
-                gp = gradient_
 
-               
+                for _ in range(3):
+                    gp = gradient_penalty(self.discriminator, src_z, tar_z)
+                    d_src_loss = self.discriminator(src_z)
+                    d_tar_loss = self.discriminator(tar_z)
 
-                domain_loss = d_loss_src + d_loss_tar
+                    wasserstein_distance = d_src_loss.mean()-d_tar_loss.mean()
 
-                loss = class_loss + domain_loss
-                loss.backward()
-                self.opt.step()
+                    domain_loss = -wasserstein_distance + 10*gp
+
+                    d_opt.zero_grad()
+                    domain_loss.backward()
+                    d_opt.step()
+
+                loss = loss+domain_loss
 
                 if index % self.log_interval == 0:
                     print("[Epoch {:3d}] Total_loss: {:.4f}   C_loss: {:.4f}   D_loss:{:.4f}".format(
@@ -216,3 +226,64 @@ class WDGRL:
 ''' Unit test '''
 if __name__ == "__main__":
     print("WDGRL model")
+
+    batch_size = 100
+    total_epoch = 300
+    feature_dim = 1000
+    class_num = 10
+    log_interval = 10
+
+    source_loader = torch.utils.data.DataLoader(datasets.MNIST(
+        "../dataset/mnist/", train=True, download=True,
+        transform=transforms.Compose([
+            transforms.ToTensor(),
+            transforms.Normalize((0.5, 0.5, 0.5), (0.5, 0.5, 0.5))
+        ])), batch_size=batch_size, shuffle=True)
+
+    target_loader = torch.utils.data.DataLoader(USPS(
+        transform=transforms.Compose([
+            transforms.Resize(28),
+            transforms.ToTensor(),
+            transforms.Normalize((0.5, 0.5, 0.5), (0.5, 0.5, 0.5)),
+        ])), batch_size=batch_size, shuffle=True)
+
+    test_src_loader = torch.utils.data.DataLoader(datasets.MNIST(
+        "../dataset/mnist/", train=False, download=True,
+        transform=transforms.Compose([
+            transforms.ToTensor(),
+            transforms.Normalize((0.5, 0.5, 0.5), (0.5, 0.5, 0.5)),
+        ])), batch_size=batch_size, shuffle=True)
+
+    test_tar_loader = torch.utils.data.DataLoader(USPS(
+        transform=transforms.Compose([
+            transforms.Resize(28),
+            transforms.ToTensor(),
+            transforms.Normalize((0.5, 0.5, 0.5), (0.5, 0.5, 0.5)),
+        ]), train=False),  batch_size=batch_size, shuffle=True)
+
+    extractor = Extractor(encoded_dim=feature_dim).cuda()
+    classifier = Classifier(encoded_dim=feature_dim).cuda()
+    discriminator = Discriminator_WGAN(encoded_dim=feature_dim).cuda()
+
+    class_criterion = nn.CrossEntropyLoss()
+
+    c_opt = torch.optim.Adam([{"params": classifier.parameters()},
+                              {"params": extractor.parameters()}], lr=1e-4)
+    d_opt = torch.optim.Adam(discriminator.parameters(), lr=1e-4)
+
+    components = {"extractor": extractor,
+                  "classifier": classifier, "discriminator": discriminator}
+    optimizers = {"c_opt": c_opt, "d_opt": d_opt}
+    dataloaders = {"source_loader": source_loader, "target_loader": target_loader,
+                   "test_src_loader": test_src_loader, "test_tar_loader": test_tar_loader}
+
+    criterions = {"class": class_criterion}
+
+    model = WDGRL(components, optimizers, dataloaders, criterions,
+                  total_epoch, feature_dim, class_num, log_interval)
+    model.train()
+    model.save_model()
+    model.visualize(dim=2)
+    model.visualize(dim=3)
+    model.load_model()
+    model.test()

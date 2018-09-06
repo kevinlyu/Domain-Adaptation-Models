@@ -3,13 +3,18 @@ import torch.nn as nn
 from torch.autograd import grad
 
 
+def set_requires_grad(model, requires_grad=True):
+    for param in model.parameters():
+        param.requires_grad = requires_grad
+
+
 def gradient_penalty(critic, h_s, h_t):
     ''' Gradeitnt penalty for Wasserstein GAN'''
     alpha = torch.rand(h_s.size(0), 1).cuda()
     differences = h_t - h_s
     interpolates = h_s + (alpha * differences)
-    interpolates = torch.stack([interpolates, h_s, h_t]).requires_grad_()
-
+    interpolates = torch.cat([interpolates, h_s, h_t]).requires_grad_()
+    # interpolates.requires_grad_()
     preds = critic(interpolates)
     gradients = grad(preds, interpolates,
                      grad_outputs=torch.ones_like(preds),
@@ -113,6 +118,46 @@ class Discriminator(nn.Module):
 
     def __init__(self, encoded_dim):
         super(Discriminator, self).__init__()
+        self.encoded_dim = encoded_dim
+
+        self.classify = nn.Sequential(
+            #nn.Linear(self.encoded_dim, 64),
+            nn.Linear(64*5*5, 64),
+            nn.BatchNorm1d(64),
+            nn.ReLU(),
+            nn.Linear(64, 2),
+            nn.LogSoftmax(1)
+        )
+
+    def forward(self, x):
+        return self.classify(x)
+
+
+class Discriminator_WGAN(nn.Module):
+    ''' Domain Discriminator '''
+
+    def __init__(self, encoded_dim):
+        super(Discriminator_WGAN, self).__init__()
+        self.encoded_dim = encoded_dim
+
+        self.classify = nn.Sequential(
+            #nn.Linear(self.encoded_dim, 64),
+            nn.Linear(64*5*5, 64),
+            nn.BatchNorm1d(64),
+            nn.ReLU(),
+            nn.Linear(64, 1),
+            #nn.Softmax(1)
+        )
+
+    def forward(self, x):
+        return self.classify(x)
+
+
+class Discriminator_GRL(nn.Module):
+    ''' Domain Discriminator with gradient reversal layer'''
+
+    def __init__(self, encoded_dim):
+        super(Discriminator_GRL, self).__init__()
         self.encoded_dim = encoded_dim
 
         self.classify = nn.Sequential(
