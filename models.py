@@ -58,7 +58,7 @@ class Extractor(nn.Module):
     def forward(self, x):
         z = self.extract(x)
         z = z.view(-1, 64*5*5)
-        z = self.fc(z)
+        #z = self.fc(z)
 
         return z
 
@@ -73,7 +73,8 @@ class Classifier(nn.Module):
         self.class_num = class_num
 
         self.classify = nn.Sequential(
-            nn.Linear(self.encoded_dim, 100),
+            #nn.Linear(self.encoded_dim, 100),
+            nn.Linear(64*5*5, 100),
             nn.BatchNorm1d(100),
             nn.ReLU(),
             # added
@@ -82,7 +83,7 @@ class Classifier(nn.Module):
             nn.BatchNorm1d(50),
             nn.ReLU(),
             nn.Linear(50, self.class_num),
-            nn.LogSoftmax()
+            nn.LogSoftmax(1)
         )
 
     def forward(self, x):
@@ -97,7 +98,8 @@ class Discriminator(nn.Module):
         self.encoded_dim = encoded_dim
 
         self.classify = nn.Sequential(
-            nn.Linear(self.encoded_dim, 64),
+            #nn.Linear(self.encoded_dim, 64),
+            nn.Linear(64*5*5, 64),
             nn.BatchNorm1d(64),
             nn.ReLU(),
             nn.Linear(64, 2),

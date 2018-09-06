@@ -98,7 +98,6 @@ class DANN:
         self.extractor.cuda().eval()
         self.classifier.cuda().eval()
 
-        print()
         src_correct = 0
         tar_correct = 0
 
@@ -116,10 +115,10 @@ class DANN:
             src_pred = self.classifier(src_z)
             _, predicted = torch.max(src_pred, 1)
             src_correct += (predicted == src_label).sum().item()
-            
+
         # testing target
         for index, (src, tar) in enumerate(zip(self.test_src_loader, self.test_tar_loader)):
-            
+
             tar_data, tar_label = tar
             tar_data, tar_label = tar_data.cuda(), tar_label.cuda()
 
@@ -128,7 +127,6 @@ class DANN:
             _, predicted = torch.max(tar_pred, 1)
             tar_correct += (predicted == tar_label).sum().item()
 
-        
         print("source accuracy: {:.2f}%".format(
             100*src_correct/len(self.test_src_loader.dataset)))
         print("target accuracy: {:.2f}%".format(
@@ -166,7 +164,7 @@ class DANN:
 
         ''' If use USPS dataset, change it to IntTensor() '''
         src_label = torch.LongTensor()
-        tar_label = torch.LongTensor()
+        tar_label = torch.IntTensor()
 
         for index, src in enumerate(self.src_loader):
             data, label = src
