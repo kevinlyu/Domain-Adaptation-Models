@@ -64,16 +64,18 @@ components = {"extractor": extractor,
 #optimizers = {"class_opt": class_opt, "domain_opt": domain_opt, "extractor_opt":extractor_opt}
 optimizers = {"opt": opt}
 dataloaders = {"source_loader": source_loader, "target_loader": target_loader,
-"test_src_loader":test_src_loader, "test_tar_loader":test_tar_loader}
+               "test_src_loader": test_src_loader, "test_tar_loader": test_tar_loader}
 
 criterions = {"class": class_criterion, "domain": domain_criterion}
 
+
 model = DANN(components, optimizers, dataloaders,
              criterions, total_epoch, feature_dim, class_num, log_interval)
-model.train()
-model.test()
-# model.save_model()
-# model.load_model()
+
 # model.train()
-model.visualize(dim=2)
-#model.visualize(dim=3)
+# model.test()
+# model.save_model()
+model.load_model()
+model.test()
+# model.visualize(dim=2)
+# model.visualize(dim=3)

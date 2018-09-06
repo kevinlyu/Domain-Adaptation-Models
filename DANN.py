@@ -4,6 +4,7 @@ from sklearn.manifold import TSNE
 import os
 import numpy as np
 from utils import *
+from dataloaders import *
 
 
 class DANN:
@@ -97,36 +98,42 @@ class DANN:
         self.extractor.cuda().eval()
         self.classifier.cuda().eval()
 
+        print()
         src_correct = 0
         tar_correct = 0
 
-        for index, (src, tar) in enumerate(zip(self.test_src_loader, self.test_tar_loader)):
+        # testing source
+        for index, src in enumerate(self.test_src_loader):
             src_data, src_label = src
-            tar_data, tar_label = tar
+            src_data, src_label = src_data.cuda(), src_label.cuda()
 
             ''' for MNIST '''
             if src_data.shape[1] != 3:
                 src_data = src_data.expand(
-                src_data.shape[0], 3, self.img_size, self.img_size)
-
-            src_data, src_label = src_data.cuda(), src_label.cuda()
-            tar_data, tar_label = tar_data.cuda(), tar_label.cuda()
+                    src_data.shape[0], 3, self.img_size, self.img_size)
 
             src_z = self.extractor(src_data)
-            tar_z = self.extractor(tar_data)
-
             src_pred = self.classifier(src_z)
-            tar_pred = self.classifier(tar_z)
-
             _, predicted = torch.max(src_pred, 1)
-            src_correct += (predicted == src_label).sum()
-
-            _, predicted = torch.max(tar_pred, 1)
-            tar_correct += (predicted == tar_label).sum()
-        
-        print("source accuracy: {:.2f}".format(src_correct/len(self.test_src_loader)))
-        print("target accuracy: {:.2f}".format(tar_correct/len(self.test_tar_loader)))
+            src_correct += (predicted == src_label).sum().item()
             
+        # testing target
+        for index, (src, tar) in enumerate(zip(self.test_src_loader, self.test_tar_loader)):
+            
+            tar_data, tar_label = tar
+            tar_data, tar_label = tar_data.cuda(), tar_label.cuda()
+
+            tar_z = self.extractor(tar_data)
+            tar_pred = self.classifier(tar_z)
+            _, predicted = torch.max(tar_pred, 1)
+            tar_correct += (predicted == tar_label).sum().item()
+
+        
+        print("source accuracy: {:.2f}%".format(
+            100*src_correct/len(self.test_src_loader.dataset)))
+        print("target accuracy: {:.2f}%".format(
+            100*tar_correct/len(self.test_tar_loader.dataset)))
+
     def save_model(self, path="./saved_DANN/"):
         try:
             os.stat(path)
