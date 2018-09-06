@@ -65,6 +65,7 @@ dataloaders = {"source_loader": source_loader, "target_loader": target_loader,
 criterions = {"class": class_criterion, "domain": domain_criterion}
 
 
+'''
 model = DANN(components, optimizers, dataloaders,
              criterions, total_epoch, feature_dim, class_num, log_interval)
 
@@ -72,7 +73,8 @@ model.train()
 model.save_model()
 # model.visualize(dim=2)
 # model.visualize(dim=3)
-model.load_model()
-model.test()
-model.visualize(dim=2)
-model.visualize(dim=3)
+#model.load_model()
+#model.test()
+#model.visualize(dim=2)
+#model.visualize(dim=3)
+'''

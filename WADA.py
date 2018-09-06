@@ -21,3 +21,4 @@ class WADA:
         self.class_num = class_num
         self.log_interval = log_interval
          
+    
