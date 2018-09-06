@@ -6,7 +6,7 @@ import torch
 import torch.nn as nn
 
 batch_size = 100
-total_epoch = 100
+total_epoch = 200
 feature_dim = 1000
 class_num = 10
 log_interval = 10
@@ -15,7 +15,8 @@ log_interval = 10
 source_loader = torch.utils.data.DataLoader(datasets.MNIST(
     "../dataset/mnist/", train=True, download=True,
     transform=transforms.Compose([
-        transforms.ToTensor()
+        transforms.ToTensor(),
+        transforms.Normalize((0.5, 0.5, 0.5), (0.5, 0.5, 0.5))
     ])), batch_size=batch_size, shuffle=True)
 
 '''
@@ -37,7 +38,8 @@ target_loader = torch.utils.data.DataLoader(USPS(
 test_src_loader = torch.utils.data.DataLoader(datasets.MNIST(
     "../dataset/mnist/", train=False, download=True,
     transform=transforms.Compose([
-        transforms.ToTensor()
+        transforms.ToTensor(),
+        transforms.Normalize((0.5, 0.5, 0.5), (0.5, 0.5, 0.5)),
     ])), batch_size=batch_size, shuffle=True)
 
 
@@ -73,9 +75,11 @@ criterions = {"class": class_criterion, "domain": domain_criterion}
 model = DANN(components, optimizers, dataloaders,
              criterions, total_epoch, feature_dim, class_num, log_interval)
 
-#model.train()
-#model.save_model()
+model.train()
+model.save_model()
 #model.visualize(dim=2)
 #model.visualize(dim=3)
 model.load_model()
 model.test()
+model.visualize(dim=2)
+model.visualize(dim=3)

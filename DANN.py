@@ -164,7 +164,7 @@ class DANN:
 
         ''' If use USPS dataset, change it to IntTensor() '''
         src_label = torch.LongTensor()
-        tar_label = torch.IntTensor()
+        tar_label = torch.LongTensor()
 
         for index, src in enumerate(self.src_loader):
             data, label = src
