@@ -19,14 +19,6 @@ source_loader = torch.utils.data.DataLoader(datasets.MNIST(
         transforms.Normalize((0.5, 0.5, 0.5), (0.5, 0.5, 0.5))
     ])), batch_size=batch_size, shuffle=True)
 
-'''
-target_loader = torch.utils.data.DataLoader(MNISTM(
-    transform=transforms.Compose([
-        transforms.Resize(28),
-        transforms.ToTensor(),
-        transforms.Normalize((0.5, 0.5, 0.5), (0.5, 0.5, 0.5)),
-    ])), batch_size=batch_size, shuffle=True)
-'''
 
 target_loader = torch.utils.data.DataLoader(USPS(
     transform=transforms.Compose([
@@ -34,6 +26,7 @@ target_loader = torch.utils.data.DataLoader(USPS(
         transforms.ToTensor(),
         transforms.Normalize((0.5, 0.5, 0.5), (0.5, 0.5, 0.5)),
     ])), batch_size=batch_size, shuffle=True)
+
 
 test_src_loader = torch.utils.data.DataLoader(datasets.MNIST(
     "../dataset/mnist/", train=False, download=True,
@@ -77,8 +70,8 @@ model = DANN(components, optimizers, dataloaders,
 
 model.train()
 model.save_model()
-#model.visualize(dim=2)
-#model.visualize(dim=3)
+# model.visualize(dim=2)
+# model.visualize(dim=3)
 model.load_model()
 model.test()
 model.visualize(dim=2)
