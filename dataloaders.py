@@ -66,23 +66,10 @@ class USPS(Dataset):
 
     def __getitem__(self, index):
         data, label = self.data[index], self.label[index]
-
-        """
-        print("loaded image")
-        plt.imshow(data)
-        plt.show()
-        """
-        #data = np.reshape(data, (16, 16, 1))
-
         data = np.stack([data]*3, axis=2)
         data = data.astype(float)
-        # print(np.shape(data))
-        # plt.imshow(data)
-        # plt.show()
         data = Image.fromarray(np.uint8(data)*255, mode="RGB")
-        #data = Image.fromarray(data, mode="RGB")
-        # data.show()
-        # exit()
+
         if self.transform is not None:
             data = self.transform(data)
 
@@ -93,3 +80,26 @@ class USPS(Dataset):
 
     def __len__(self):
         return len(self.data)
+
+
+# VisDA 2018
+visda_syn_root = "../dataset/visda2018/train/"
+VisdaSyn = torchvision.datasets.ImageFolder(visda_syn_root, transform=transforms.Compose([
+    transforms.Resize(28),
+    transforms.Normalize((0.5, 0.5, 0.5), (0.5, 0.5, 0.5)),
+    transforms.ToTensor()
+]))
+
+visda_syn_loader = torch.utils.data.DataLoader(
+    Visda, batch_size=100, shuffle=True, num_workers=4)
+
+visda_real_root = "../dataset/visda2018/test/"
+
+VisdaReal = torchvision.datasets.ImageFolder(visda_real_root, transform=transforms.Compose([
+    transforms.Resize(28),
+    transforms.Normalize((0.5, 0.5, 0.5), (0.5, 0.5, 0.5)),
+    transforms.ToTensor()
+]))
+
+visda_real_loader = torch.utils.data.DataLoader(
+    VisdaReal, batch_size=100, shuffle=True, num_workers=4)
