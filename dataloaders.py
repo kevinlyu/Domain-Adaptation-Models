@@ -73,16 +73,16 @@ class USPS(Dataset):
         plt.show()
         """
         #data = np.reshape(data, (16, 16, 1))
-        
+
         data = np.stack([data]*3, axis=2)
         data = data.astype(float)
-        #print(np.shape(data))
-        #plt.imshow(data)
-        #plt.show()        
+        # print(np.shape(data))
+        # plt.imshow(data)
+        # plt.show()
         data = Image.fromarray(np.uint8(data)*255, mode="RGB")
         #data = Image.fromarray(data, mode="RGB")
-        #data.show()
-        #exit()
+        # data.show()
+        # exit()
         if self.transform is not None:
             data = self.transform(data)
 

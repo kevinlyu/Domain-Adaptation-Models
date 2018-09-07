@@ -175,10 +175,16 @@ class Discriminator_GRL(nn.Module):
 
 
 class Discriminator_mini(nn.Module):
+    ''' class level discriminator for SAN'''
+
     def __init__(self, encoded_dim):
         self.encoded_dim = encoded_dim
 
         self.classify = nn.Sequential(
-            
+
+            nn.Linear(encoded_dim, 1),
+            nn.Sigmoid()
         )
+
     def forward(self, x):
+        return self.classify(x)

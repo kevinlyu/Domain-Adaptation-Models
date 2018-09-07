@@ -233,7 +233,7 @@ class WDGRL:
 if __name__ == "__main__":
     print("WDGRL model")
 
-    batch_size = 100
+    batch_size = 50
     total_epoch = 100
     feature_dim = 1000
     class_num = 10

@@ -6,7 +6,7 @@ import torch
 import torch.nn as nn
 
 batch_size = 100
-total_epoch = 200
+total_epoch = 500
 feature_dim = 1000
 class_num = 10
 log_interval = 10
@@ -70,8 +70,8 @@ model = DANN(components, optimizers, dataloaders,
 
 model.train()
 model.save_model()
-model.visualize(dim=2)
-model.visualize(dim=3)
+# model.visualize(dim=2)
+# model.visualize(dim=3)
 model.load_model()
 model.test()
 # model.visualize(dim=2)
