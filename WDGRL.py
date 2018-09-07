@@ -7,6 +7,9 @@ from utils import *
 from dataloaders import *
 from models import *
 
+from PIL import Image
+import matplotlib.pyplot as plt
+
 
 class WDGRL:
 
@@ -40,18 +43,21 @@ class WDGRL:
 
                 src_data, src_label = src
                 tar_data, tar_label = tar
-
+               
                 size = min(src_data.shape[0], tar_data.shape[0])
                 src_data, src_label = src_data[0:size], src_label[0:size]
                 tar_data, tar_label = tar_data[0:size], tar_label[0:size]
 
-                """ For MNIST data, expand number of channel to 3 """
+                """ For MNIST """
                 if src_data.shape[1] != 3:
                     src_data = src_data.expand(
                         src_data.shape[0], 3, self.img_size, self.img_size)
 
                 src_data, src_label = src_data.cuda(), src_label.cuda()
                 tar_data, tar_label = tar_data.cuda(), tar_label.cuda()
+
+                # print(src_data.shape)
+                # print(tar_data.shape)
 
                 """ train classifer """
 
@@ -86,7 +92,7 @@ class WDGRL:
                     src_z = self.extractor(src_data)
                     tar_z = self.extractor(tar_data)
 
-                for _ in range(3):
+                for _ in range(5):
                     gp = gradient_penalty(self.discriminator, src_z, tar_z)
                     d_src_loss = self.discriminator(src_z)
                     d_tar_loss = self.discriminator(tar_z)
@@ -228,7 +234,7 @@ if __name__ == "__main__":
     print("WDGRL model")
 
     batch_size = 100
-    total_epoch = 300
+    total_epoch = 100
     feature_dim = 1000
     class_num = 10
     log_interval = 10
@@ -268,7 +274,7 @@ if __name__ == "__main__":
     class_criterion = nn.CrossEntropyLoss()
 
     c_opt = torch.optim.Adam([{"params": classifier.parameters()},
-                              {"params": extractor.parameters()}], lr=1e-4)
+                             {"params": extractor.parameters()}], lr=1e-4)
     d_opt = torch.optim.Adam(discriminator.parameters(), lr=1e-4)
 
     components = {"extractor": extractor,

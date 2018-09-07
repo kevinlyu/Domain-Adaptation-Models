@@ -207,3 +207,4 @@ class DANN:
 
         elif dim == 3:
             visualize_3d(embedding, label, tag, self.class_num)
+

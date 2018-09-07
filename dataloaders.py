@@ -66,8 +66,23 @@ class USPS(Dataset):
 
     def __getitem__(self, index):
         data, label = self.data[index], self.label[index]
-        data = Image.fromarray(data, mode="RGB")
 
+        """
+        print("loaded image")
+        plt.imshow(data)
+        plt.show()
+        """
+        #data = np.reshape(data, (16, 16, 1))
+        
+        data = np.stack([data]*3, axis=2)
+        data = data.astype(float)
+        #print(np.shape(data))
+        #plt.imshow(data)
+        #plt.show()        
+        data = Image.fromarray(np.uint8(data)*255, mode="RGB")
+        #data = Image.fromarray(data, mode="RGB")
+        #data.show()
+        #exit()
         if self.transform is not None:
             data = self.transform(data)
 
@@ -77,4 +92,4 @@ class USPS(Dataset):
         return data, label
 
     def __len__(self):
-        return len(self.label)
+        return len(self.data)

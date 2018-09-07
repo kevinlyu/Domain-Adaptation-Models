@@ -6,7 +6,9 @@ import numpy as np
 import torch
 # from torch.utils.data import Dataset
 from torchvision import datasets
+from PIL import Image
 
+import matplotlib.pyplot as plt
 '''
 image after preprocess is in CHW (channel, height, width) format for pytorch use. If you want to plot 
 these images, convert them into HWC first
@@ -57,13 +59,20 @@ def process_usps(usps_path="/home/neo/dataset/usps/"):
         usps_test_data = test.get("data")[:]
         usps_test_label = test.get("target")[:]
 
+    #usps_train_data = np.asarray(usps_train_data)
+    #usps_test_data = np.asarray(usps_test_data)
+
+
     usps_train_data = np.reshape(usps_train_data, (-1, 16, 16))
     usps_test_data = np.reshape(usps_test_data, (-1, 16, 16))
-
     # usps_train_data*=255.0
     # usps_test_data*=255.0
     usps_train_label = usps_train_label.astype(int)
     usps_test_label = usps_test_label.astype(int)
+    '''
+    usps_train_data = np.stack((usps_train_data,)*3, -1)
+    usps_test_data = np.stack((usps_test_data,)*3, -1)
+    '''
 
     training_set = (usps_train_data, usps_train_label)
     testing_set = (usps_test_data, usps_test_label)

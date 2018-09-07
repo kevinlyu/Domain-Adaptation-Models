@@ -143,10 +143,10 @@ class Discriminator_WGAN(nn.Module):
         self.classify = nn.Sequential(
             #nn.Linear(self.encoded_dim, 64),
             nn.Linear(64*5*5, 64),
-            nn.BatchNorm1d(64),
+            # nn.BatchNorm1d(64),
             nn.ReLU(),
             nn.Linear(64, 1),
-            #nn.Softmax(1)
+            # nn.Softmax(1)
         )
 
     def forward(self, x):
@@ -172,3 +172,13 @@ class Discriminator_GRL(nn.Module):
     def forward(self, x, constant):
         x = GradReverse.grad_reverse(x, constant)
         return self.classify(x)
+
+
+class Discriminator_mini(nn.Module):
+    def __init__(self, encoded_dim):
+        self.encoded_dim = encoded_dim
+
+        self.classify = nn.Sequential(
+            
+        )
+    def forward(self, x):
