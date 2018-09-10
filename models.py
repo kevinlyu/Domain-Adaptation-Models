@@ -188,3 +188,25 @@ class Discriminator_mini(nn.Module):
 
     def forward(self, x):
         return self.classify(x)
+
+
+class Relater(nn.Module):
+
+    ''' Relater network used in WADA model '''
+
+    def __init__(self, encoded_dim):
+        super(Relater, self).__init__()
+        self.encoded_dim = encoded_dim
+
+        self.distinguish = nn.Sequential(
+            nn.Linear(64*5*5, 100),
+            nn.BatchNorm1d(100),
+            nn.ReLU(),
+            nn.Linear(100, 20),
+            nn.ReLU(),
+            nn.Linear(20, 1),
+            nn.Sigmoid()
+        )
+
+    def forward(self, x):
+        return self.distinguish(x)

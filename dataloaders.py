@@ -85,20 +85,20 @@ class USPS(Dataset):
 # VisDA 2018
 visda_syn_root = "../dataset/visda2018/train/"
 VisdaSyn = torchvision.datasets.ImageFolder(visda_syn_root, transform=transforms.Compose([
-    transforms.Resize(28),
-    transforms.Normalize((0.5, 0.5, 0.5), (0.5, 0.5, 0.5)),
-    transforms.ToTensor()
+    transforms.Resize((28, 28)),
+    transforms.ToTensor(),
+    transforms.Normalize((0.5, 0.5, 0.5), (0.5, 0.5, 0.5))
 ]))
 
 visda_syn_loader = torch.utils.data.DataLoader(
-    Visda, batch_size=100, shuffle=True, num_workers=4)
+    VisdaSyn, batch_size=100, shuffle=True, num_workers=4)
 
-visda_real_root = "../dataset/visda2018/test/"
+visda_real_root = "../dataset/visda2018/validation/"
 
 VisdaReal = torchvision.datasets.ImageFolder(visda_real_root, transform=transforms.Compose([
-    transforms.Resize(28),
-    transforms.Normalize((0.5, 0.5, 0.5), (0.5, 0.5, 0.5)),
-    transforms.ToTensor()
+    transforms.Resize((28, 28)),
+    transforms.ToTensor(),
+    transforms.Normalize((0.5, 0.5, 0.5), (0.5, 0.5, 0.5))
 ]))
 
 visda_real_loader = torch.utils.data.DataLoader(

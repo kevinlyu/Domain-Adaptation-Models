@@ -5,6 +5,7 @@ import os
 import numpy as np
 from utils import *
 from dataloaders import *
+from models import *
 
 
 class DANN:
@@ -46,6 +47,8 @@ class DANN:
                 src_data, src_label = src
                 tar_data, tar_label = tar
 
+                # src_label = src_label.type(torch.cuda.LongTensor)
+
                 size = min(src_data.shape[0], tar_data.shape[0])
                 src_data, src_label = src_data[0:size], src_label[0:size]
                 tar_data, tar_label = tar_data[0:size], tar_label[0:size]
@@ -70,6 +73,7 @@ class DANN:
 
                 ''' classify accuracy '''
                 _, predicted = torch.max(pred_class, 1)
+
                 accuracy = 100.0 * \
                     (predicted == src_label).sum() / src_data.size(0)
 
@@ -208,3 +212,72 @@ class DANN:
         elif dim == 3:
             visualize_3d(embedding, label, tag, self.class_num)
 
+
+if __name__ == "__main__":
+
+    batch_size = 50
+    total_epoch = 500
+    feature_dim = 1000
+    class_num = 13
+    log_interval = 10
+
+    source_loader = torch.utils.data.DataLoader(datasets.MNIST(
+        "../dataset/mnist/", train=True, download=True,
+        transform=transforms.Compose([
+            transforms.ToTensor(),
+            transforms.Normalize((0.5, 0.5, 0.5), (0.5, 0.5, 0.5))
+        ])), batch_size=batch_size, shuffle=True)
+
+    target_loader = torch.utils.data.DataLoader(USPS(
+        transform=transforms.Compose([
+            transforms.Resize(28),
+            transforms.ToTensor(),
+            transforms.Normalize((0.5, 0.5, 0.5), (0.5, 0.5, 0.5)),
+        ])), batch_size=batch_size, shuffle=True)
+
+    test_src_loader = torch.utils.data.DataLoader(datasets.MNIST(
+        "../dataset/mnist/", train=False, download=True,
+        transform=transforms.Compose([
+            transforms.ToTensor(),
+            transforms.Normalize((0.5, 0.5, 0.5), (0.5, 0.5, 0.5)),
+        ])), batch_size=batch_size, shuffle=True)
+
+    test_tar_loader = torch.utils.data.DataLoader(USPS(
+        transform=transforms.Compose([
+            transforms.Resize(28),
+            transforms.ToTensor(),
+            transforms.Normalize((0.5, 0.5, 0.5), (0.5, 0.5, 0.5)),
+        ]), train=False),  batch_size=batch_size, shuffle=True)
+
+    extractor = Extractor(encoded_dim=feature_dim).cuda()
+    classifier = Classifier(encoded_dim=feature_dim,
+                            class_num=class_num).cuda()
+    discriminator = Discriminator_GRL(encoded_dim=feature_dim).cuda()
+
+    class_criterion = nn.NLLLoss()
+    domain_criterion = nn.NLLLoss()
+    
+    opt = torch.optim.Adam([{"params": classifier.parameters()},
+                            {"params": extractor.parameters()},
+                            {"params": discriminator.parameters()}], lr=1e-4)
+
+    components = {"extractor": extractor,
+                  "classifier": classifier, "discriminator": discriminator}
+    #optimizers = {"class_opt": class_opt, "domain_opt": domain_opt, "extractor_opt":extractor_opt}
+    optimizers = {"opt": opt}
+
+    dataloaders = {"source_loader": visda_syn_loader, "target_loader": visda_real_loader,
+                   "test_src_loader": visda_syn_loader, "test_tar_loader": visda_real_loader}
+
+    criterions = {"class": class_criterion, "domain": domain_criterion}
+
+    model = DANN(components, optimizers, dataloaders,
+                 criterions, total_epoch, feature_dim, class_num, log_interval)
+
+    #model.train()
+    #model.save_model()
+    # model.visualize(dim=2)
+    # model.visualize(dim=3)
+    model.load_model()
+    model.visualize(dim=2)
+    model.test()
