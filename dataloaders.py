@@ -68,7 +68,7 @@ class USPS(Dataset):
         data, label = self.data[index], self.label[index]
         data = np.stack([data]*3, axis=2)
         data = data.astype(float)
-        data = Image.fromarray(np.uint8(data)*255, mode="RGB")
+        data = Image.fromarray(np.uint8(data), mode="RGB")
 
         if self.transform is not None:
             data = self.transform(data)
@@ -103,3 +103,8 @@ VisdaReal = torchvision.datasets.ImageFolder(visda_real_root, transform=transfor
 
 visda_real_loader = torch.utils.data.DataLoader(
     VisdaReal, batch_size=100, shuffle=True, num_workers=4)
+
+
+# Office 
+office_root = "../dataset/office"
+# Caltech

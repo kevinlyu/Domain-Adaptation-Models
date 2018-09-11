@@ -143,10 +143,10 @@ class Discriminator_WGAN(nn.Module):
         self.classify = nn.Sequential(
             #nn.Linear(self.encoded_dim, 64),
             nn.Linear(64*5*5, 64),
-            # nn.BatchNorm1d(64),
+            nn.BatchNorm1d(64),
             nn.ReLU(),
             nn.Linear(64, 1),
-            # nn.Softmax(1)
+            #nn.Softmax(1)
         )
 
     def forward(self, x):

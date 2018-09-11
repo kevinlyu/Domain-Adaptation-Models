@@ -62,17 +62,14 @@ def process_usps(usps_path="/home/neo/dataset/usps/"):
     #usps_train_data = np.asarray(usps_train_data)
     #usps_test_data = np.asarray(usps_test_data)
 
-
     usps_train_data = np.reshape(usps_train_data, (-1, 16, 16))
     usps_test_data = np.reshape(usps_test_data, (-1, 16, 16))
-    # usps_train_data*=255.0
-    # usps_test_data*=255.0
+
+    usps_train_data *= 255.0
+    usps_test_data *= 255.0
+
     usps_train_label = usps_train_label.astype(int)
     usps_test_label = usps_test_label.astype(int)
-    '''
-    usps_train_data = np.stack((usps_train_data,)*3, -1)
-    usps_test_data = np.stack((usps_test_data,)*3, -1)
-    '''
 
     training_set = (usps_train_data, usps_train_label)
     testing_set = (usps_test_data, usps_test_label)
@@ -87,4 +84,5 @@ def process_usps(usps_path="/home/neo/dataset/usps/"):
     print("Done")
 
 
-process_usps()
+# process_mnistm()
+# process_usps()

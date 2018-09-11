@@ -230,38 +230,38 @@ class WDGRL:
 if __name__ == "__main__":
     print("WDGRL model")
 
-    batch_size = 50
-    total_epoch = 200
+    batch_size = 100
+    total_epoch = 300
     feature_dim = 1000
-    class_num = 13
+    class_num = 10
     log_interval = 10
-    
+
     source_loader = torch.utils.data.DataLoader(datasets.MNIST(
         "../dataset/mnist/", train=True, download=True,
         transform=transforms.Compose([
             transforms.ToTensor(),
-            transforms.Normalize((0.5, 0.5, 0.5), (0.5, 0.5, 0.5))
+            #transforms.Normalize((0.5, 0.5, 0.5), (0.5, 0.5, 0.5))
         ])), batch_size=batch_size, shuffle=True)
 
-    target_loader = torch.utils.data.DataLoader(USPS(
+    target_loader = torch.utils.data.DataLoader(MNISTM(
         transform=transforms.Compose([
             transforms.Resize(28),
             transforms.ToTensor(),
-            transforms.Normalize((0.5, 0.5, 0.5), (0.5, 0.5, 0.5)),
-        ])), batch_size=batch_size, shuffle=True)
+            #ransforms.Normalize((0.5, 0.5, 0.5), (0.5, 0.5, 0.5)),
+        ]), train=True), batch_size=batch_size, shuffle=True)
 
     test_src_loader = torch.utils.data.DataLoader(datasets.MNIST(
         "../dataset/mnist/", train=False, download=True,
         transform=transforms.Compose([
             transforms.ToTensor(),
-            transforms.Normalize((0.5, 0.5, 0.5), (0.5, 0.5, 0.5)),
+            #transforms.Normalize((0.5, 0.5, 0.5), (0.5, 0.5, 0.5)),
         ])), batch_size=batch_size, shuffle=True)
 
-    test_tar_loader = torch.utils.data.DataLoader(USPS(
+    test_tar_loader = torch.utils.data.DataLoader(MNISTM(
         transform=transforms.Compose([
             transforms.Resize(28),
             transforms.ToTensor(),
-            transforms.Normalize((0.5, 0.5, 0.5), (0.5, 0.5, 0.5)),
+            #transforms.Normalize((0.5, 0.5, 0.5), (0.5, 0.5, 0.5)),
         ]), train=False),  batch_size=batch_size, shuffle=True)
 
     extractor = Extractor(encoded_dim=feature_dim).cuda()
@@ -278,16 +278,18 @@ if __name__ == "__main__":
     components = {"extractor": extractor,
                   "classifier": classifier, "discriminator": discriminator}
     optimizers = {"c_opt": c_opt, "d_opt": d_opt}
-    dataloaders = {"source_loader": visda_syn_loader, "target_loader": visda_real_loader,
-                   "test_src_loader": visda_syn_loader, "test_tar_loader": visda_real_loader}
+    dataloaders = {"source_loader": source_loader, "target_loader": target_loader,
+                   "test_src_loader": test_src_loader, "test_tar_loader": test_tar_loader}
 
     criterions = {"class": class_criterion}
 
     model = WDGRL(components, optimizers, dataloaders, criterions,
                   total_epoch, feature_dim, class_num, log_interval)
+    # model.load_model()
     model.train()
     model.save_model()
-    model.visualize(dim=2)
-    model.visualize(dim=3)
     model.load_model()
     model.test()
+    model.visualize(dim=2)
+    model.visualize(dim=3)
+    # model.load_model()

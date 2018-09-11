@@ -215,10 +215,10 @@ class DANN:
 
 if __name__ == "__main__":
 
-    batch_size = 50
-    total_epoch = 500
+    batch_size = 100
+    total_epoch = 100
     feature_dim = 1000
-    class_num = 13
+    class_num = 10
     log_interval = 10
 
     source_loader = torch.utils.data.DataLoader(datasets.MNIST(
@@ -228,12 +228,12 @@ if __name__ == "__main__":
             transforms.Normalize((0.5, 0.5, 0.5), (0.5, 0.5, 0.5))
         ])), batch_size=batch_size, shuffle=True)
 
-    target_loader = torch.utils.data.DataLoader(USPS(
+    target_loader = torch.utils.data.DataLoader(MNISTM(
         transform=transforms.Compose([
             transforms.Resize(28),
             transforms.ToTensor(),
             transforms.Normalize((0.5, 0.5, 0.5), (0.5, 0.5, 0.5)),
-        ])), batch_size=batch_size, shuffle=True)
+        ]), train=True), batch_size=batch_size, shuffle=True)
 
     test_src_loader = torch.utils.data.DataLoader(datasets.MNIST(
         "../dataset/mnist/", train=False, download=True,
@@ -242,7 +242,7 @@ if __name__ == "__main__":
             transforms.Normalize((0.5, 0.5, 0.5), (0.5, 0.5, 0.5)),
         ])), batch_size=batch_size, shuffle=True)
 
-    test_tar_loader = torch.utils.data.DataLoader(USPS(
+    test_tar_loader = torch.utils.data.DataLoader(MNISTM(
         transform=transforms.Compose([
             transforms.Resize(28),
             transforms.ToTensor(),
@@ -256,7 +256,7 @@ if __name__ == "__main__":
 
     class_criterion = nn.NLLLoss()
     domain_criterion = nn.NLLLoss()
-    
+
     opt = torch.optim.Adam([{"params": classifier.parameters()},
                             {"params": extractor.parameters()},
                             {"params": discriminator.parameters()}], lr=1e-4)
@@ -266,18 +266,21 @@ if __name__ == "__main__":
     #optimizers = {"class_opt": class_opt, "domain_opt": domain_opt, "extractor_opt":extractor_opt}
     optimizers = {"opt": opt}
 
-    dataloaders = {"source_loader": visda_syn_loader, "target_loader": visda_real_loader,
-                   "test_src_loader": visda_syn_loader, "test_tar_loader": visda_real_loader}
+    dataloaders = {"source_loader": source_loader, "target_loader": target_loader,
+                   "test_src_loader": test_src_loader, "test_tar_loader": test_tar_loader}
 
     criterions = {"class": class_criterion, "domain": domain_criterion}
 
     model = DANN(components, optimizers, dataloaders,
                  criterions, total_epoch, feature_dim, class_num, log_interval)
 
-    #model.train()
-    #model.save_model()
+    model.train()
+    model.save_model()
     # model.visualize(dim=2)
     # model.visualize(dim=3)
+    # model.save_model()
     model.load_model()
-    model.visualize(dim=2)
     model.test()
+    model.visualize(dim=2)
+    model.visualize(dim=3)
+    # model.visualize(dim=2)
