@@ -240,28 +240,28 @@ if __name__ == "__main__":
         "../dataset/mnist/", train=True, download=True,
         transform=transforms.Compose([
             transforms.ToTensor(),
-            #transforms.Normalize((0.5, 0.5, 0.5), (0.5, 0.5, 0.5))
+            transforms.Normalize((0.5, 0.5, 0.5), (0.5, 0.5, 0.5))
         ])), batch_size=batch_size, shuffle=True)
 
-    target_loader = torch.utils.data.DataLoader(MNISTM(
+    target_loader = torch.utils.data.DataLoader(USPS(
         transform=transforms.Compose([
             transforms.Resize(28),
             transforms.ToTensor(),
-            #ransforms.Normalize((0.5, 0.5, 0.5), (0.5, 0.5, 0.5)),
+            transforms.Normalize((0.5, 0.5, 0.5), (0.5, 0.5, 0.5)),
         ]), train=True), batch_size=batch_size, shuffle=True)
 
     test_src_loader = torch.utils.data.DataLoader(datasets.MNIST(
         "../dataset/mnist/", train=False, download=True,
         transform=transforms.Compose([
             transforms.ToTensor(),
-            #transforms.Normalize((0.5, 0.5, 0.5), (0.5, 0.5, 0.5)),
+            transforms.Normalize((0.5, 0.5, 0.5), (0.5, 0.5, 0.5)),
         ])), batch_size=batch_size, shuffle=True)
 
-    test_tar_loader = torch.utils.data.DataLoader(MNISTM(
+    test_tar_loader = torch.utils.data.DataLoader(USPS(
         transform=transforms.Compose([
             transforms.Resize(28),
             transforms.ToTensor(),
-            #transforms.Normalize((0.5, 0.5, 0.5), (0.5, 0.5, 0.5)),
+            transforms.Normalize((0.5, 0.5, 0.5), (0.5, 0.5, 0.5)),
         ]), train=False),  batch_size=batch_size, shuffle=True)
 
     extractor = Extractor(encoded_dim=feature_dim).cuda()

@@ -216,10 +216,10 @@ class DANN:
 if __name__ == "__main__":
 
     batch_size = 100
-    total_epoch = 100
+    total_epoch = 200
     feature_dim = 1000
     class_num = 10
-    log_interval = 10
+    log_interval = 50
 
     source_loader = torch.utils.data.DataLoader(datasets.MNIST(
         "../dataset/mnist/", train=True, download=True,
@@ -228,7 +228,7 @@ if __name__ == "__main__":
             transforms.Normalize((0.5, 0.5, 0.5), (0.5, 0.5, 0.5))
         ])), batch_size=batch_size, shuffle=True)
 
-    target_loader = torch.utils.data.DataLoader(MNISTM(
+    target_loader = torch.utils.data.DataLoader(USPS(
         transform=transforms.Compose([
             transforms.Resize(28),
             transforms.ToTensor(),
@@ -242,7 +242,7 @@ if __name__ == "__main__":
             transforms.Normalize((0.5, 0.5, 0.5), (0.5, 0.5, 0.5)),
         ])), batch_size=batch_size, shuffle=True)
 
-    test_tar_loader = torch.utils.data.DataLoader(MNISTM(
+    test_tar_loader = torch.utils.data.DataLoader(USPS(
         transform=transforms.Compose([
             transforms.Resize(28),
             transforms.ToTensor(),
@@ -259,7 +259,7 @@ if __name__ == "__main__":
 
     opt = torch.optim.Adam([{"params": classifier.parameters()},
                             {"params": extractor.parameters()},
-                            {"params": discriminator.parameters()}], lr=1e-4)
+                            {"params": discriminator.parameters()}], lr=1e-3)
 
     components = {"extractor": extractor,
                   "classifier": classifier, "discriminator": discriminator}
@@ -276,11 +276,8 @@ if __name__ == "__main__":
 
     model.train()
     model.save_model()
-    # model.visualize(dim=2)
-    # model.visualize(dim=3)
-    # model.save_model()
     model.load_model()
     model.test()
-    model.visualize(dim=2)
-    model.visualize(dim=3)
+    #model.visualize(dim=2)
+    # model.visualize(dim=3)
     # model.visualize(dim=2)

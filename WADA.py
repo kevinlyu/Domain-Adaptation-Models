@@ -14,6 +14,7 @@ class WADA:
 
         self.src_extractor = components["src_extractor"]
         self.tar_extractor = components["tar_extractor"]
+        self.classifier = components["classifier"]
         self.relater = components["relater"]
         self.discriminator = components["discriminator"]
         self.c_opt = optimizers["c_opt"]
@@ -31,6 +32,7 @@ class WADA:
         self.feature_dim = feature_dim
         self.class_num = class_num
         self.log_interval = log_interval
+        self.img_size = 28
 
     def train(self):
 
@@ -84,19 +86,27 @@ class WADA:
                     tar_z = self.tar_extractor(tar_data)
 
                 # let output in src --> 0 and target ---> 1 as partial transfer probability
-                src_tag = torch.ones(src_z.size(0)).type(
+                src_tag = torch.ones(src_z.size(0), 1).type(
                     torch.FloatTensor).cuda()
-                tar_tag = torch.zeros(tar_z.size(0)).type(
+                tar_tag = torch.zeros(tar_z.size(0), 1).type(
                     torch.FloatTensor).cuda()
 
                 # maximize the abilibity of relator to distinguish data domains
-                r_pred_src = self.discriminator(src_z)
-                r_pred_tar = self.discriminator(tar_z)
+                r_pred_src = self.relater(src_z)
+                r_pred_tar = self.relater(tar_z)
 
-                r_loss_src = self.r_criterion(src_tag, r_pred_src)
-                r_loss_tar = self.r_criterion(tar_tag, r_pred_tar)
+                '''
+                print(r_pred_src.shape)
+                print(src_tag.shape)
+
+                print(r_pred_src.shape)
+                print(src_tag.shape)
+                '''
+                r_loss_src = self.r_criterion(r_pred_src, src_tag)
+                r_loss_tar = self.r_criterion(r_pred_tar, tar_tag)
 
                 r_loss = r_loss_src + r_loss_tar
+
                 r_opt.zero_grad()
                 r_loss.backward()
                 r_opt.step()
@@ -108,7 +118,7 @@ class WADA:
                         src_z = self.src_extractor(src_data)
                         tar_z = self.tar_extractor(tar_data)
 
-                        r_src = self.relater(src_data)
+                        r_src = self.relater(src_z)
 
                     gp = gradient_penalty(self.discriminator, src_z, tar_z)
                     d_src_loss = r_src*self.discriminator(src_z)
@@ -116,14 +126,19 @@ class WADA:
 
                     wasserstein_distance = d_src_loss.mean()-d_tar_loss.mean()
 
-                    domain_loss = -wasserstein_distance + 10*gp
+                    d_loss = -wasserstein_distance + 10*gp
 
                     d_opt.zero_grad()
-                    domain_loss.backward()
+                    d_loss.backward()
                     d_opt.step()
 
-                print(
-                    "[Epoch {:3d}] Total_loss: {:.4f}\tC_loss: {:.4f}\tR_loss: {:.4f}\t")
+                    total_loss = c_loss + r_loss + d_loss
+                
+                if index % self.log_interval == 0:
+                    print("[Epoch {:3d}] Total_loss:{:.4f}   C_loss:{:.4f}   R_loss:{:.4f}   D_loss:{:.4f}".format
+                      (epoch, total_loss, c_loss, r_loss, d_loss))
+                
+                    print("Classifier Accuracy: {:.2f}\n".format(accuracy))
 
     def test(self):
         print("[Testing]")
@@ -202,14 +217,66 @@ class WADA:
         self.discriminator.load_state_dict(
             torch.load(os.path.join(path, "WADA_D.pkl")))
 
-    def visualize(self, dim):
-        print("visualize to {}".format(dim))
+    def visualize(self, dim, plot_num):
+        print("t-SNE reduces to dimension {}".format(dim))
+
+        self.src_extractor.cpu().eval()
+        self.tar_extractor.cpu().eval()
+
+        src_data = torch.FloatTensor()
+        tar_data = torch.FloatTensor()
+
+        ''' If use USPS dataset, change it to IntTensor() '''
+        src_label = torch.LongTensor()
+        tar_label = torch.LongTensor()
+
+        for index, src in enumerate(self.src_loader):
+            data, label = src
+            src_data = torch.cat((src_data, data))
+            src_label = torch.cat((src_label, label))
+
+        for index, tar in enumerate(self.tar_loader):
+            data, label = tar
+            tar_data = torch.cat((tar_data, data))
+            tar_label = torch.cat((tar_label, label))
+
+        ''' for MNIST dataset '''
+        if src_data.shape[1] != 3:
+            src_data = src_data.expand(
+                src_data.shape[0], 3, self.img_size, self.img_size)
+
+        src_data, src_label = src_data[0:plot_num], src_label[0:plot_num]
+        tar_data, tar_label = tar_data[0:plot_num], tar_label[0:plot_num]
+
+        src_z = self.src_extractor(src_data)
+        tar_z = self.tar_extractor(tar_data)
+
+        data = np.concatenate((src_z.detach().numpy(), tar_z.detach().numpy()))
+        label = np.concatenate((src_label.numpy(), tar_label.numpy()))
+
+        src_tag = torch.zeros(src_z.size(0))
+        tar_tag = torch.ones(tar_z.size(0))
+        tag = np.concatenate((src_tag.numpy(), tar_tag.numpy()))
+
+        ''' t-SNE process '''
+        tsne = TSNE(n_components=dim)
+
+        embedding = tsne.fit_transform(data)
+        embedding_max, embedding_min = np.max(
+            embedding, 0), np.min(embedding, 0)
+        embedding = (embedding-embedding_min) / (embedding_max - embedding_min)
+
+        if dim == 2:
+            visualize_2d(embedding, label, tag, self.class_num)
+
+        elif dim == 3:
+            visualize_3d(embedding, label, tag, self.class_num)
 
 
 if __name__ == "__main__":
     ''' paramters '''
     batch_size = 100
-    total_epoch = 2
+    total_epoch = 100
     feature_dim = 1000
     class_num = 10
     log_interval = 10
@@ -245,11 +312,11 @@ if __name__ == "__main__":
         ]), train=False),  batch_size=test_batch_size, shuffle=True)
 
     ''' model components '''
-    src_extractor = Extractor(encoded_dim=feature_dim)
-    tar_extractor = Extractor(encoded_dim=feature_dim)
-    relater = Relater(encoded_dim=feature_dim)
-    classifier = Classifier(encoded_dim=feature_dim)
-    discriminator = Discriminator_WGAN(encoded_dim=feature_dim)
+    src_extractor = Extractor(encoded_dim=feature_dim).cuda()
+    tar_extractor = Extractor(encoded_dim=feature_dim).cuda()
+    relater = Relater(encoded_dim=feature_dim).cuda()
+    classifier = Classifier(encoded_dim=feature_dim).cuda()
+    discriminator = Discriminator_WGAN(encoded_dim=feature_dim).cuda()
 
     ''' optimizers '''
     c_opt = torch.optim.Adam([{"params": classifier.parameters()},
@@ -259,8 +326,8 @@ if __name__ == "__main__":
     d_opt = torch.optim.Adam(discriminator.parameters(), lr=1e-4)
 
     ''' criterions '''
-    c_criterion = nn.BCELoss()
-    r_criterion = nn.NLLLoss()
+    c_criterion = nn.CrossEntropyLoss()
+    r_criterion = nn.BCELoss()
     # criterion of discriminator is defined as wasserstein by myself
 
     components = {"src_extractor": src_extractor, "tar_extractor": tar_extractor,
@@ -275,3 +342,6 @@ if __name__ == "__main__":
     model = WADA(components, optimizers, dataloaders, criterions,
                  total_epoch, feature_dim, class_num, log_interval)
     model.train()
+    model.save_model()
+    model.load_model()
+    model.test()

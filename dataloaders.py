@@ -68,7 +68,7 @@ class USPS(Dataset):
         data, label = self.data[index], self.label[index]
         data = np.stack([data]*3, axis=2)
         data = data.astype(float)
-        data = Image.fromarray(np.uint8(data), mode="RGB")
+        data = Image.fromarray(np.uint8(data)*255, mode="RGB")
 
         if self.transform is not None:
             data = self.transform(data)
