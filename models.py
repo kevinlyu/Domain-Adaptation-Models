@@ -47,6 +47,32 @@ class GradReverse(torch.autograd.Function):
         return GradReverse.apply(x, constant)
 
 
+class Extractor_new(nn.Module):
+
+    def __init__(self, in_channels=64, lrelu_slope=0.2, encoded_dim=100):
+        super(Extractor_new, self).__init__()
+
+        self.in_channels = in_channels
+        self.lrelu_slope = lrelu_slope
+        self.encoded_dim = encoded_dim
+
+        self.extract = nn.Sequential(
+            nn.Conv2d(3, self.in_channels, 5),
+            nn.BatchNorm2d(self.in_channels),
+            nn.MaxPool2d(2),
+            nn.LeakyReLU(self.lrelu_slope),
+            nn.Conv2d(self.in_channels, self.in_channels//2, 5),
+            nn.BatchNorm2d(self.in_channels//2),
+            nn.Dropout2d(),
+            nn.MaxPool2d(2),
+            nn.LeakyReLU(self.lrelu_slope)
+        )
+
+    def forward(self, x):
+        z = self.extract(x)
+        z = z.view(-1, 32*4*4)
+        return z
+
 class Extractor(nn.Module):
     ''' Feature extractor '''
 
@@ -97,7 +123,8 @@ class Classifier(nn.Module):
 
         self.classify = nn.Sequential(
             #nn.Linear(self.encoded_dim, 100),
-            nn.Linear(64*5*5, 100),
+            #nn.Linear(64*5*5, 100),
+            nn.Linear(32*4*4, 100),
             nn.BatchNorm1d(100),
             nn.ReLU(),
             # added
@@ -122,7 +149,8 @@ class Discriminator(nn.Module):
 
         self.classify = nn.Sequential(
             #nn.Linear(self.encoded_dim, 64),
-            nn.Linear(64*5*5, 64),
+            #nn.Linear(64*5*5, 64),
+            nn.Linear(32*4*4, 64),
             nn.BatchNorm1d(64),
             nn.ReLU(),
             nn.Linear(64, 2),
@@ -142,11 +170,12 @@ class Discriminator_WGAN(nn.Module):
 
         self.classify = nn.Sequential(
             #nn.Linear(self.encoded_dim, 64),
-            nn.Linear(64*5*5, 64),
+            #nn.Linear(64*5*5, 64),
+            nn.Linear(32*4*4, 64),
             nn.BatchNorm1d(64),
             nn.ReLU(),
             nn.Linear(64, 1),
-            #nn.Softmax(1)
+            # nn.Softmax(1)
         )
 
     def forward(self, x):
@@ -162,7 +191,8 @@ class Discriminator_GRL(nn.Module):
 
         self.classify = nn.Sequential(
             #nn.Linear(self.encoded_dim, 64),
-            nn.Linear(64*5*5, 64),
+            #nn.Linear(64*5*5, 64),
+            nn.Linear(32*4*4, 64),
             nn.BatchNorm1d(64),
             nn.ReLU(),
             nn.Linear(64, 2),

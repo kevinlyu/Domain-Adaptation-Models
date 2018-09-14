@@ -215,15 +215,19 @@ class WDGRL:
         tsne = TSNE(n_components=dim)
 
         embedding = tsne.fit_transform(data)
+        '''
         embedding_max, embedding_min = np.max(
             embedding, 0), np.min(embedding, 0)
         embedding = (embedding-embedding_min) / (embedding_max - embedding_min)
-
+        '''
+        
         if dim == 2:
-            visualize_2d(embedding, label, tag, self.class_num)
+            visualize_2d("./saved_WDGRL/", embedding,
+                         label, tag, self.class_num)
 
         elif dim == 3:
-            visualize_3d(embedding, label, tag, self.class_num)
+            visualize_3d("./saved_WDGRL/", embedding,
+                         label, tag, self.class_num)
 
 
 ''' Unit test '''
@@ -231,7 +235,7 @@ if __name__ == "__main__":
     print("WDGRL model")
 
     batch_size = 100
-    total_epoch = 300
+    total_epoch = 500
     feature_dim = 1000
     class_num = 10
     log_interval = 10
@@ -264,7 +268,7 @@ if __name__ == "__main__":
             transforms.Normalize((0.5, 0.5, 0.5), (0.5, 0.5, 0.5)),
         ]), train=False),  batch_size=batch_size, shuffle=True)
 
-    extractor = Extractor(encoded_dim=feature_dim).cuda()
+    extractor = Extractor_new(encoded_dim=feature_dim).cuda()
     classifier = Classifier(encoded_dim=feature_dim,
                             class_num=class_num).cuda()
     discriminator = Discriminator_WGAN(encoded_dim=feature_dim).cuda()
@@ -272,8 +276,8 @@ if __name__ == "__main__":
     class_criterion = nn.CrossEntropyLoss()
 
     c_opt = torch.optim.Adam([{"params": classifier.parameters()},
-                              {"params": extractor.parameters()}], lr=1e-4)
-    d_opt = torch.optim.Adam(discriminator.parameters(), lr=1e-4)
+                              {"params": extractor.parameters()}], lr=1e-3)
+    d_opt = torch.optim.Adam(discriminator.parameters(), lr=1e-3)
 
     components = {"extractor": extractor,
                   "classifier": classifier, "discriminator": discriminator}
@@ -291,5 +295,5 @@ if __name__ == "__main__":
     model.load_model()
     model.test()
     model.visualize(dim=2)
-    model.visualize(dim=3)
+    # model.visualize(dim=3)
     # model.load_model()

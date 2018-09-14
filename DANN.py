@@ -158,7 +158,7 @@ class DANN:
         self.discriminator.load_state_dict(
             torch.load(os.path.join(path, "DANN_D.pkl")))
 
-    def visualize(self, dim=2, plot_num=1000):
+    def visualize(self, dim=2, plot_num=5000):
         print("t-SNE reduces to dimension {}".format(dim))
 
         self.extractor.cpu().eval()
@@ -199,7 +199,7 @@ class DANN:
         tag = np.concatenate((src_tag.numpy(), tar_tag.numpy()))
 
         ''' t-SNE process '''
-        tsne = TSNE(n_components=dim)
+        tsne = TSNE(n_components=dim, n_iter=1000)
 
         embedding = tsne.fit_transform(data)
         embedding_max, embedding_min = np.max(
@@ -207,19 +207,21 @@ class DANN:
         embedding = (embedding-embedding_min) / (embedding_max - embedding_min)
 
         if dim == 2:
-            visualize_2d(embedding, label, tag, self.class_num)
+            visualize_2d("./saved_DANN/", embedding,
+                         label, tag, self.class_num)
 
         elif dim == 3:
-            visualize_3d(embedding, label, tag, self.class_num)
+            visualize_3d("./saved_DANN/", embedding,
+                         label, tag, self.class_num)
 
 
 if __name__ == "__main__":
 
     batch_size = 100
-    total_epoch = 200
+    total_epoch = 350
     feature_dim = 1000
     class_num = 10
-    log_interval = 50
+    log_interval = 20
 
     source_loader = torch.utils.data.DataLoader(datasets.MNIST(
         "../dataset/mnist/", train=True, download=True,
@@ -228,7 +230,7 @@ if __name__ == "__main__":
             transforms.Normalize((0.5, 0.5, 0.5), (0.5, 0.5, 0.5))
         ])), batch_size=batch_size, shuffle=True)
 
-    target_loader = torch.utils.data.DataLoader(USPS(
+    target_loader = torch.utils.data.DataLoader(MNISTM(
         transform=transforms.Compose([
             transforms.Resize(28),
             transforms.ToTensor(),
@@ -242,14 +244,14 @@ if __name__ == "__main__":
             transforms.Normalize((0.5, 0.5, 0.5), (0.5, 0.5, 0.5)),
         ])), batch_size=batch_size, shuffle=True)
 
-    test_tar_loader = torch.utils.data.DataLoader(USPS(
+    test_tar_loader = torch.utils.data.DataLoader(MNISTM(
         transform=transforms.Compose([
             transforms.Resize(28),
             transforms.ToTensor(),
             transforms.Normalize((0.5, 0.5, 0.5), (0.5, 0.5, 0.5)),
         ]), train=False),  batch_size=batch_size, shuffle=True)
 
-    extractor = Extractor(encoded_dim=feature_dim).cuda()
+    extractor = Extractor_new(encoded_dim=feature_dim).cuda()
     classifier = Classifier(encoded_dim=feature_dim,
                             class_num=class_num).cuda()
     discriminator = Discriminator_GRL(encoded_dim=feature_dim).cuda()
@@ -278,6 +280,5 @@ if __name__ == "__main__":
     model.save_model()
     model.load_model()
     model.test()
-    #model.visualize(dim=2)
+    model.visualize(dim=2)
     # model.visualize(dim=3)
-    # model.visualize(dim=2)

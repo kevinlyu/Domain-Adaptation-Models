@@ -4,9 +4,10 @@ import matplotlib.pyplot as plt
 from matplotlib.pyplot import cm
 from matplotlib.ticker import NullFormatter
 import numpy as np
+import os
 
 
-def visualize_2d(embedding, label, domain, class_num):
+def visualize_2d(save_path, embedding, label, domain, class_num):
 
     fig = plt.figure()
     ax = fig.add_subplot(111)
@@ -23,7 +24,8 @@ def visualize_2d(embedding, label, domain, class_num):
     ax.yaxis.set_major_formatter(NullFormatter())
     plt.axis('tight')
     plt.legend(loc='best', scatterpoints=1, fontsize=5)
-    plt.savefig("TSNE_Label_2D.pdf", format='pdf', dpi=600)
+    plt.savefig(os.path.join(save_path, "TSNE_Label_2D.pdf"),
+                format='pdf', dpi=600)
     plt.show()
     plt.close()
 
@@ -39,12 +41,13 @@ def visualize_2d(embedding, label, domain, class_num):
     ax.yaxis.set_major_formatter(NullFormatter())
     plt.axis('tight')
     plt.legend(loc='best', scatterpoints=1, fontsize=5)
-    plt.savefig("TSNE_Domain_2D.pdf", format='pdf', dpi=600)
+    plt.savefig(os.path.join(save_path, "TSNE_Domain_2D.pdf"),
+                format='pdf', dpi=600)
     plt.show()
     plt.close()
 
 
-def visualize_3d(embedding, label, domain, class_num):
+def visualize_3d(save_path, embedding, label, domain, class_num):
     fig = plt.figure()
     ax = fig.add_subplot(111, projection="3d")
     colors = cm.rainbow(np.linspace(0.0, 1.0, class_num))
@@ -62,7 +65,8 @@ def visualize_3d(embedding, label, domain, class_num):
     ax.zaxis.set_major_formatter(NullFormatter())
     plt.axis('tight')
     plt.legend(loc='best', scatterpoints=1, fontsize=5)
-    plt.savefig("TSNE_Label_3D.pdf", format='pdf', dpi=600)
+    plt.savefig(os.path.join(save_path, "TSNE_Label_3D.pdf"),
+                format='pdf', dpi=600)
     plt.show()
     plt.close()
 
@@ -78,6 +82,7 @@ def visualize_3d(embedding, label, domain, class_num):
     ax.zaxis.set_major_formatter(NullFormatter())
     plt.axis('tight')
     plt.legend(loc='best', scatterpoints=1, fontsize=5)
-    plt.savefig("TSNE_Domain_3D.pdf", format='pdf', dpi=600)
+    plt.savefig(os.path.join(save_path, "TSNE_Domain_3D.pdf"),
+                format='pdf', dpi=600)
     plt.show()
     plt.close()
