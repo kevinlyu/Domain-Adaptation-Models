@@ -19,7 +19,7 @@ class WADA:
         self.discriminator = components["discriminator"]
         self.c_opt = optimizers["c_opt"]
         self.r_opt = optimizers["r_opt"]
-        self.r_opt = optimizers["d_opt"]
+        self.d_opt = optimizers["d_opt"]
         self.src_loader = dataloaders["src_loader"]
         self.tar_loader = dataloaders["tar_loader"]
         self.test_src_loader = dataloaders["test_src_loader"]
@@ -55,92 +55,22 @@ class WADA:
                 tar_data, tar_label = tar_data.cuda(), tar_label.cuda()
 
                 """ train classifier """
-                set_requires_grad(self.relater, requires_grad=True)
-                set_requires_grad(self.src_extractor, requires_grad=True)
-                set_requires_grad(self.tar_extractor, requires_grad=True)
-                set_requires_grad(self.discriminator, requires_grad=False)
-
                 src_z = self.src_extractor(src_data)
                 tar_z = self.tar_extractor(tar_data)
-
+                
                 pred_class = self.classifier(src_z)
-                class_loss = self.c_criterion(pred_class, src_label)
+                pred_loss = self.c_criterion(pred_class, src_label)
 
-                r_src = self.relater(src_z)
-
-                # wasserstein distance
-                wasserstein_diatance = (r_src*self.discriminator(
-                    src_z)).mean() - self.discriminator(tar_z).mean()
-
-                # sliced wasserstein distance
-                # sw =
-
-                c_loss = class_loss + wasserstein_diatance
-
-                """ classify accuracy """
                 _, predicted = torch.max(pred_class, 1)
-                accuracy = 100.0 * \
-                    (predicted == src_label).sum() / src_data.size(0)
+                accuracy = 100.0 * (predicted == src_label).sum()/src_data.size(0)
 
-                self.c_opt.zero_grad()
-                c_loss.backward()
-                self.c_opt.step()
-
-                """ train relater """
-                set_requires_grad(self.relater, requires_grad=True)
-                set_requires_grad(self.src_extractor, requires_grad=True)
-                set_requires_grad(self.tar_extractor, requires_grad=True)
-                set_requires_grad(self.discriminator, requires_grad=False)
-
+                # w2 distance 
                 with torch.no_grad():
-                    # when train relator, do not bp to feature extractor
-                    src_z = self.src_extractor(src_data)
-                    tar_z = self.tar_extractor(tar_data)
+                    w2_distance = self.discriminator(src_z) - self.discriminator(tar_z)
 
-                # let output in src --> 0 and target ---> 1 as partial transfer probability
-                src_tag = torch.zeros(src_z.size(0), 1).type(
-                    torch.FloatTensor).cuda()
-                tar_tag = torch.ones(tar_z.size(0), 1).type(
-                    torch.FloatTensor).cuda()
+                c_loss = pred_loss
 
-                # maximize the abilibity of relator to distinguish data domains
-                r_pred_src = self.relater(src_z)
-                r_pred_tar = self.relater(tar_z)
-
-                r_loss_src = self.r_criterion(r_pred_src, src_tag)
-                r_loss_tar = self.r_criterion(r_pred_tar, tar_tag)
-
-                r_loss = r_loss_src + r_loss_tar
-
-                r_opt.zero_grad()
-                r_loss.backward()
-                r_opt.step()
-
-                """ train discriminator """
-                set_requires_grad(self.relater, requires_grad=False)
-                set_requires_grad(self.src_extractor, requires_grad=False)
-                set_requires_grad(self.tar_extractor, requires_grad=False)
-                set_requires_grad(self.discriminator, requires_grad=True)
-
-                for _ in range(5):
-
-                    with torch.no_grad():
-                        r_src = self.relater(src_z)
-                        #r_src /= r_src.sum()
-
-                    gp = gradient_penalty(self.discriminator, src_z, tar_z)
-                    d_src_loss = self.discriminator(src_z)*r_src
-                    d_tar_loss = self.discriminator(tar_z)
-
-                    wasserstein_distance = d_src_loss.mean()-d_tar_loss.mean()
-
-                    d_loss = -wasserstein_distance + 10*gp
-
-                    d_opt.zero_grad()
-                    d_loss.backward()
-                    d_opt.step()
-
-                    total_loss = c_loss + r_loss + d_loss
+            
 
                 if index % self.log_interval == 0:
                     print("[Epoch {:3d}] Total_loss:{:.4f}   C_loss:{:.4f}   R_loss:{:.4f}   D_loss:{:.4f}".format
@@ -287,11 +217,11 @@ class WADA:
 if __name__ == "__main__":
     ''' paramters '''
     batch_size = 100
-    total_epoch = 300
+    total_epoch = 100
     feature_dim = 1000
     class_num = 10
     log_interval = 10
-    test_batch_size = 3000
+    test_batch_size = 100
 
     ''' dataloaders '''
     source_loader = torch.utils.data.DataLoader(datasets.MNIST(
@@ -301,7 +231,7 @@ if __name__ == "__main__":
             transforms.Normalize((0.5, 0.5, 0.5), (0.5, 0.5, 0.5))
         ])), batch_size=batch_size, shuffle=True)
 
-    target_loader = torch.utils.data.DataLoader(USPS(
+    target_loader = torch.utils.data.DataLoader(MNISTM(
         transform=transforms.Compose([
             transforms.Resize(28),
             transforms.ToTensor(),
@@ -315,7 +245,7 @@ if __name__ == "__main__":
             transforms.Normalize((0.5, 0.5, 0.5), (0.5, 0.5, 0.5)),
         ])), batch_size=test_batch_size, shuffle=True)
 
-    test_tar_loader = torch.utils.data.DataLoader(USPS(
+    test_tar_loader = torch.utils.data.DataLoader(MNISTM(
         transform=transforms.Compose([
             transforms.Resize(28),
             transforms.ToTensor(),
@@ -334,7 +264,7 @@ if __name__ == "__main__":
                               {"params": src_extractor.parameters()}], lr=1e-3)
     r_opt = torch.optim.Adam(relater.parameters(), lr=1e-3)
     d_opt = torch.optim.Adam([{"params": discriminator.parameters()},
-                              {"params": tar_extractor.parameters()}], lr=1e-4)
+                              {"params": tar_extractor.parameters()}], lr=1e-3)
 
     ''' criterions '''
     c_criterion = nn.CrossEntropyLoss()

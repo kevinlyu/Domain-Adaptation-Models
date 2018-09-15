@@ -73,6 +73,7 @@ class Extractor_new(nn.Module):
         z = z.view(-1, 32*4*4)
         return z
 
+
 class Extractor(nn.Module):
     ''' Feature extractor '''
 
@@ -151,7 +152,7 @@ class Discriminator(nn.Module):
             #nn.Linear(self.encoded_dim, 64),
             #nn.Linear(64*5*5, 64),
             nn.Linear(32*4*4, 64),
-            nn.BatchNorm1d(64),
+            #nn.BatchNorm1d(64),
             nn.ReLU(),
             nn.Linear(64, 2),
             nn.LogSoftmax(1)
@@ -172,7 +173,7 @@ class Discriminator_WGAN(nn.Module):
             #nn.Linear(self.encoded_dim, 64),
             #nn.Linear(64*5*5, 64),
             nn.Linear(32*4*4, 64),
-            nn.BatchNorm1d(64),
+            # nn.BatchNorm1d(64),
             nn.ReLU(),
             nn.Linear(64, 1),
             # nn.Softmax(1)
@@ -229,7 +230,8 @@ class Relater(nn.Module):
         self.encoded_dim = encoded_dim
 
         self.distinguish = nn.Sequential(
-            nn.Linear(64*5*5, 100),
+            #nn.Linear(64*5*5, 100),
+            nn.Linear(32*4*4, 100),
             nn.BatchNorm1d(100),
             nn.ReLU(),
             nn.Linear(100, 20),

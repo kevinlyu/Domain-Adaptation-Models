@@ -47,8 +47,6 @@ class DANN:
                 src_data, src_label = src
                 tar_data, tar_label = tar
 
-                # src_label = src_label.type(torch.cuda.LongTensor)
-
                 size = min(src_data.shape[0], tar_data.shape[0])
                 src_data, src_label = src_data[0:size], src_label[0:size]
                 tar_data, tar_label = tar_data[0:size], tar_label[0:size]
@@ -158,7 +156,7 @@ class DANN:
         self.discriminator.load_state_dict(
             torch.load(os.path.join(path, "DANN_D.pkl")))
 
-    def visualize(self, dim=2, plot_num=5000):
+    def visualize(self, dim=2, plot_num=1000):
         print("t-SNE reduces to dimension {}".format(dim))
 
         self.extractor.cpu().eval()
@@ -199,7 +197,8 @@ class DANN:
         tag = np.concatenate((src_tag.numpy(), tar_tag.numpy()))
 
         ''' t-SNE process '''
-        tsne = TSNE(n_components=dim, n_iter=1000)
+        # modefied perplexity
+        tsne = TSNE(n_components=dim, n_iter=3000, perplexity=35)
 
         embedding = tsne.fit_transform(data)
         embedding_max, embedding_min = np.max(
@@ -218,7 +217,7 @@ class DANN:
 if __name__ == "__main__":
 
     batch_size = 100
-    total_epoch = 350
+    total_epoch = 250
     feature_dim = 1000
     class_num = 10
     log_interval = 20
@@ -230,7 +229,7 @@ if __name__ == "__main__":
             transforms.Normalize((0.5, 0.5, 0.5), (0.5, 0.5, 0.5))
         ])), batch_size=batch_size, shuffle=True)
 
-    target_loader = torch.utils.data.DataLoader(MNISTM(
+    target_loader = torch.utils.data.DataLoader(USPS(
         transform=transforms.Compose([
             transforms.Resize(28),
             transforms.ToTensor(),
@@ -244,7 +243,7 @@ if __name__ == "__main__":
             transforms.Normalize((0.5, 0.5, 0.5), (0.5, 0.5, 0.5)),
         ])), batch_size=batch_size, shuffle=True)
 
-    test_tar_loader = torch.utils.data.DataLoader(MNISTM(
+    test_tar_loader = torch.utils.data.DataLoader(USPS(
         transform=transforms.Compose([
             transforms.Resize(28),
             transforms.ToTensor(),
@@ -261,11 +260,11 @@ if __name__ == "__main__":
 
     opt = torch.optim.Adam([{"params": classifier.parameters()},
                             {"params": extractor.parameters()},
-                            {"params": discriminator.parameters()}], lr=1e-3)
+                            {"params": discriminator.parameters()}], lr=5e-4)
 
     components = {"extractor": extractor,
                   "classifier": classifier, "discriminator": discriminator}
-    #optimizers = {"class_opt": class_opt, "domain_opt": domain_opt, "extractor_opt":extractor_opt}
+
     optimizers = {"opt": opt}
 
     dataloaders = {"source_loader": source_loader, "target_loader": target_loader,
