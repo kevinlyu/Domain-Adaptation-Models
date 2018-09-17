@@ -55,22 +55,69 @@ class WADA:
                 tar_data, tar_label = tar_data.cuda(), tar_label.cuda()
 
                 """ train classifier """
+                self.c_opt.zero_grad()
                 src_z = self.src_extractor(src_data)
                 tar_z = self.tar_extractor(tar_data)
-                
+
                 pred_class = self.classifier(src_z)
                 pred_loss = self.c_criterion(pred_class, src_label)
 
                 _, predicted = torch.max(pred_class, 1)
-                accuracy = 100.0 * (predicted == src_label).sum()/src_data.size(0)
+                accuracy = 100.0 * \
+                    (predicted == src_label).sum()/src_data.size(0)
 
-                # w2 distance 
                 with torch.no_grad():
-                    w2_distance = self.discriminator(src_z) - self.discriminator(tar_z)
+                    r = self.relater(src_z)
 
-                c_loss = pred_loss
+                d_src_loss = self.discriminator(src_z)
+                d_tar_loss = self.discriminator(tar_z)
 
-            
+                #print("Classifier r.mean()= {}".format(r.mean()))
+                w2_distance = (d_src_loss.mean() - d_tar_loss.mean())
+
+                c_loss = pred_loss + w2_distance
+                c_loss.backward()
+                self.c_opt.step()
+
+                """ train relater """
+                self.r_opt.zero_grad()
+
+                with torch.no_grad():
+                    src_z = self.src_extractor(src_data)
+                    tar_z = self.tar_extractor(tar_data)
+
+                r_src = self.relater(src_z)
+                r_tar = self.relater(tar_z)
+
+                r_loss_src = self.r_criterion(r_src, torch.zeros(
+                    r_src.size(0), 1).type(torch.FloatTensor).cuda())
+
+                r_loss_tar = self.r_criterion(r_tar, torch.ones(
+                    r_tar.size(0), 1).type(torch.FloatTensor).cuda())
+
+                r_loss = r_loss_src + r_loss_tar
+                r_loss.backward()
+                self.r_opt.step()
+
+                """ train discriminator """
+                for _ in range(5):
+
+                    with torch.no_grad():
+                        r = self.relater(src_z)
+
+                    gp = gradient_penalty(self.discriminator, src_z, tar_z)
+                    d_src_loss = self.discriminator(src_z)
+                    d_tar_loss = self.discriminator(tar_z)
+
+                    #print("Discrimiator r.mean() = {}".format(r.mean()))
+                    #d_src_loss *= r
+                    w2_distance = (d_src_loss.mean() - d_tar_loss.mean())
+
+                    d_loss = -w2_distance + 10*gp
+                    d_loss.backward()
+                    self.d_opt.step()
+
+                total_loss = c_loss + r_loss + d_loss
 
                 if index % self.log_interval == 0:
                     print("[Epoch {:3d}] Total_loss:{:.4f}   C_loss:{:.4f}   R_loss:{:.4f}   D_loss:{:.4f}".format
@@ -260,11 +307,18 @@ if __name__ == "__main__":
     discriminator = Discriminator_WGAN(encoded_dim=feature_dim).cuda()
 
     ''' optimizers '''
+    """
     c_opt = torch.optim.Adam([{"params": classifier.parameters()},
                               {"params": src_extractor.parameters()}], lr=1e-3)
     r_opt = torch.optim.Adam(relater.parameters(), lr=1e-3)
     d_opt = torch.optim.Adam([{"params": discriminator.parameters()},
                               {"params": tar_extractor.parameters()}], lr=1e-3)
+    """
+    c_opt = torch.optim.Adam([{"params": classifier.parameters()},
+                              {"params": src_extractor.parameters()},
+                              {"params": tar_extractor.parameters()}], lr=1e-3)
+    r_opt = torch.optim.Adam(relater.parameters(), lr=1e-3)
+    d_opt = torch.optim.Adam(discriminator.parameters(), lr=1e-3)
 
     ''' criterions '''
     c_criterion = nn.CrossEntropyLoss()
