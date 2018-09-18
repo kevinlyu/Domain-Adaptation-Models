@@ -1,0 +1,202 @@
+!_TAG_FILE_FORMAT	2	/extended format; --format=1 will not append ;" to lines/
+!_TAG_FILE_SORTED	1	/0=unsorted, 1=sorted, 2=foldcase/
+!_TAG_PROGRAM_AUTHOR	Darren Hiebert	/dhiebert@users.sourceforge.net/
+!_TAG_PROGRAM_NAME	Exuberant Ctags	//
+!_TAG_PROGRAM_URL	http://ctags.sourceforge.net	/official site/
+!_TAG_PROGRAM_VERSION	5.9~svn20110310	//
+Classifier	../models.py	/^class Classifier(nn.Module):$/;"	kind:class	line:116
+DANN	../DANN.py	/^class DANN:$/;"	kind:class	line:11
+DANN.py	../DANN.py	1;"	kind:file	line:1
+Discriminator	../models.py	/^class Discriminator(nn.Module):$/;"	kind:class	line:144
+Discriminator_GRL	../models.py	/^class Discriminator_GRL(nn.Module):$/;"	kind:class	line:186
+Discriminator_WGAN	../models.py	/^class Discriminator_WGAN(nn.Module):$/;"	kind:class	line:165
+Discriminator_mini	../models.py	/^class Discriminator_mini(nn.Module):$/;"	kind:class	line:208
+Extractor	../models.py	/^class Extractor(nn.Module):$/;"	kind:class	line:77
+Extractor_new	../models.py	/^class Extractor_new(nn.Module):$/;"	kind:class	line:50
+GradReverse	../models.py	/^class GradReverse(torch.autograd.Function):$/;"	kind:class	line:28
+MNISTM	../dataloaders.py	/^class MNISTM(Dataset):$/;"	kind:class	line:11
+Relater	../models.py	/^class Relater(nn.Module):$/;"	kind:class	line:224
+SAN	../SAN.py	/^class SAN:$/;"	kind:class	line:11
+SAN.py	../SAN.py	1;"	kind:file	line:1
+USPS	../dataloaders.py	/^class USPS(Dataset):$/;"	kind:class	line:48
+VisdaReal	../dataloaders.py	/^VisdaReal = torchvision.datasets.ImageFolder(visda_real_root, transform=transforms.Compose([$/;"	kind:variable	line:98
+VisdaSyn	../dataloaders.py	/^VisdaSyn = torchvision.datasets.ImageFolder(visda_syn_root, transform=transforms.Compose([$/;"	kind:variable	line:87
+WADA	../WADA.py	/^class WADA:$/;"	kind:class	line:11
+WADA.py	../WADA.py	1;"	kind:file	line:1
+WDGRL	../WDGRL.py	/^class WDGRL:$/;"	kind:class	line:14
+WDGRL	../main.py	/^class WDGRL:$/;"	kind:class	line:14
+WDGRL.py	../WDGRL.py	1;"	kind:file	line:1
+__getitem__	../dataloaders.py	/^    def __getitem__(self, index):$/;"	kind:member	line:30
+__getitem__	../dataloaders.py	/^    def __getitem__(self, index):$/;"	kind:member	line:67
+__init__	../DANN.py	/^    def __init__(self, components, optimizers, dataloaderes, criterions, total_epoch, feature_dim, class_num, log_interval):$/;"	kind:member	line:12
+__init__	../SAN.py	/^    def __init__(self, components, optimizers, dataloaders, criterions, total_epoch, feature_dim, class_num, log_interval):$/;"	kind:member	line:13
+__init__	../WADA.py	/^    def __init__(self, components, optimizers, dataloaders, criterions, total_epoch, feature_dim, class_num, log_interval):$/;"	kind:member	line:13
+__init__	../WDGRL.py	/^    def __init__(self, components, optimizers, dataloaders, criterions, total_epoch, feature_dim, class_num, log_interval):$/;"	kind:member	line:16
+__init__	../dataloaders.py	/^    def __init__(self, root="\/home\/neo\/dataset\/mnistm\/", train=True, transform=None, target_transform=None):$/;"	kind:member	line:16
+__init__	../dataloaders.py	/^    def __init__(self, root="\/home\/neo\/dataset\/usps\/", train=True, transform=None, target_transform=None):$/;"	kind:member	line:53
+__init__	../main.py	/^    def __init__(self, components, optimizers, dataloaders, criterions, total_epoch, feature_dim, class_num, log_interval):$/;"	kind:member	line:16
+__init__	../models.py	/^    def __init__(self, encoded_dim):$/;"	kind:member	line:147
+__init__	../models.py	/^    def __init__(self, encoded_dim):$/;"	kind:member	line:168
+__init__	../models.py	/^    def __init__(self, encoded_dim):$/;"	kind:member	line:189
+__init__	../models.py	/^    def __init__(self, encoded_dim):$/;"	kind:member	line:211
+__init__	../models.py	/^    def __init__(self, encoded_dim):$/;"	kind:member	line:228
+__init__	../models.py	/^    def __init__(self, encoded_dim=100, class_num=10):$/;"	kind:member	line:119
+__init__	../models.py	/^    def __init__(self, in_channels=16, lrelu_slope=0.2, encoded_dim=100):$/;"	kind:member	line:80
+__init__	../models.py	/^    def __init__(self, in_channels=64, lrelu_slope=0.2, encoded_dim=100):$/;"	kind:member	line:52
+__len__	../dataloaders.py	/^    def __len__(self):$/;"	kind:member	line:43
+__len__	../dataloaders.py	/^    def __len__(self):$/;"	kind:member	line:81
+backward	../models.py	/^    def backward(ctx, grad_output):$/;"	kind:member	line:38
+batch_size	../DANN.py	/^    batch_size = 100$/;"	kind:variable	line:219
+batch_size	../WADA.py	/^    batch_size = 100$/;"	kind:variable	line:266
+batch_size	../WDGRL.py	/^    batch_size = 150$/;"	kind:variable	line:236
+batch_size	../main.py	/^    batch_size = 150$/;"	kind:variable	line:262
+c_criterion	../WADA.py	/^    c_criterion = nn.CrossEntropyLoss()$/;"	kind:variable	line:324
+c_opt	../WADA.py	/^    c_opt = torch.optim.Adam([{"params": classifier.parameters()},$/;"	kind:variable	line:317
+c_opt	../WDGRL.py	/^    c_opt = torch.optim.RMSprop([{"params": classifier.parameters()},$/;"	kind:variable	line:277
+c_opt	../main.py	/^    c_opt = torch.optim.RMSprop([{"params": classifier.parameters()},$/;"	kind:variable	line:306
+class_criterion	../DANN.py	/^    class_criterion = nn.NLLLoss()$/;"	kind:variable	line:258
+class_criterion	../WDGRL.py	/^    class_criterion = nn.CrossEntropyLoss()$/;"	kind:variable	line:275
+class_criterion	../main.py	/^    class_criterion = nn.CrossEntropyLoss()$/;"	kind:variable	line:303
+class_num	../DANN.py	/^    class_num = 10$/;"	kind:variable	line:222
+class_num	../SAN.py	/^    class_num = 10$/;"	kind:variable	line:32
+class_num	../WADA.py	/^    class_num = 10$/;"	kind:variable	line:269
+class_num	../WDGRL.py	/^    class_num = 10$/;"	kind:variable	line:239
+class_num	../main.py	/^    class_num = 10$/;"	kind:variable	line:265
+classifier	../DANN.py	/^    classifier = Classifier(encoded_dim=feature_dim,$/;"	kind:variable	line:254
+classifier	../SAN.py	/^    classifier = Classifier()$/;"	kind:variable	line:65
+classifier	../WADA.py	/^    classifier = Classifier(encoded_dim=feature_dim).cuda()$/;"	kind:variable	line:306
+classifier	../WDGRL.py	/^    classifier = Classifier(encoded_dim=feature_dim,$/;"	kind:variable	line:271
+classifier	../main.py	/^    classifier = Classifier(encoded_dim=feature_dim,$/;"	kind:variable	line:297
+components	../DANN.py	/^    components = {"extractor": extractor,$/;"	kind:variable	line:265
+components	../WADA.py	/^    components = {"src_extractor": src_extractor, "tar_extractor": tar_extractor,$/;"	kind:variable	line:328
+components	../WDGRL.py	/^    components = {"extractor": extractor,$/;"	kind:variable	line:281
+components	../main.py	/^    components = {"extractor": extractor,$/;"	kind:variable	line:311
+criterions	../DANN.py	/^    criterions = {"class": class_criterion, "domain": domain_criterion}$/;"	kind:variable	line:273
+criterions	../WADA.py	/^    criterions = {"c_criterion": c_criterion, "r_criterion": r_criterion}$/;"	kind:variable	line:335
+criterions	../WDGRL.py	/^    criterions = {"class": class_criterion}$/;"	kind:variable	line:287
+criterions	../main.py	/^    criterions = {"class": class_criterion, "relation": relation_criterion}$/;"	kind:variable	line:317
+d_opt	../WADA.py	/^    d_opt = torch.optim.Adam(discriminator.parameters(), lr=1e-3)$/;"	kind:variable	line:321
+d_opt	../WDGRL.py	/^    d_opt = torch.optim.RMSprop(discriminator.parameters(), lr=1e-4)$/;"	kind:variable	line:279
+d_opt	../main.py	/^    d_opt = torch.optim.RMSprop(discriminator.parameters(), lr=1e-4)$/;"	kind:variable	line:308
+dataloaders	../DANN.py	/^    dataloaders = {"source_loader": source_loader, "target_loader": target_loader,$/;"	kind:variable	line:270
+dataloaders	../WADA.py	/^    dataloaders = {"src_loader": source_loader, "tar_loader": target_loader,$/;"	kind:variable	line:330
+dataloaders	../WDGRL.py	/^    dataloaders = {"source_loader": source_loader, "target_loader": target_loader,$/;"	kind:variable	line:284
+dataloaders	../main.py	/^    dataloaders = {"source_loader": source_loader, "target_loader": target_loader,$/;"	kind:variable	line:314
+dataloaders.py	../dataloaders.py	1;"	kind:file	line:1
+discriminator	../DANN.py	/^    discriminator = Discriminator_GRL(encoded_dim=feature_dim).cuda()$/;"	kind:variable	line:256
+discriminator	../WADA.py	/^    discriminator = Discriminator_WGAN(encoded_dim=feature_dim).cuda()$/;"	kind:variable	line:307
+discriminator	../WDGRL.py	/^    discriminator = Discriminator_WGAN(encoded_dim=feature_dim).cuda()$/;"	kind:variable	line:273
+discriminator	../main.py	/^    discriminator = Discriminator_WGAN(encoded_dim=feature_dim).cuda()$/;"	kind:variable	line:301
+domain_criterion	../DANN.py	/^    domain_criterion = nn.NLLLoss()$/;"	kind:variable	line:259
+ex	../test.py	/^ex = Extractor()$/;"	kind:variable	line:32
+extractor	../DANN.py	/^    extractor = Extractor_new(encoded_dim=feature_dim).cuda()$/;"	kind:variable	line:253
+extractor	../SAN.py	/^    extractor = Extractor_new()$/;"	kind:variable	line:64
+extractor	../WDGRL.py	/^    extractor = Extractor_new(encoded_dim=feature_dim).cuda()$/;"	kind:variable	line:270
+extractor	../main.py	/^    extractor = Extractor_new(encoded_dim=feature_dim).cuda()$/;"	kind:variable	line:296
+feature_dim	../DANN.py	/^    feature_dim = 1000$/;"	kind:variable	line:221
+feature_dim	../SAN.py	/^    feature_dim = 1000$/;"	kind:variable	line:31
+feature_dim	../WADA.py	/^    feature_dim = 1000$/;"	kind:variable	line:268
+feature_dim	../WDGRL.py	/^    feature_dim = 1000$/;"	kind:variable	line:238
+feature_dim	../main.py	/^    feature_dim = 1000$/;"	kind:variable	line:264
+forward	../models.py	/^    def forward(ctx, x, constant):$/;"	kind:member	line:33
+forward	../models.py	/^    def forward(self, x):$/;"	kind:member	line:108
+forward	../models.py	/^    def forward(self, x):$/;"	kind:member	line:140
+forward	../models.py	/^    def forward(self, x):$/;"	kind:member	line:161
+forward	../models.py	/^    def forward(self, x):$/;"	kind:member	line:182
+forward	../models.py	/^    def forward(self, x):$/;"	kind:member	line:220
+forward	../models.py	/^    def forward(self, x):$/;"	kind:member	line:243
+forward	../models.py	/^    def forward(self, x):$/;"	kind:member	line:71
+forward	../models.py	/^    def forward(self, x, constant):$/;"	kind:member	line:203
+grad_reverse	../models.py	/^    def grad_reverse(x, constant):$/;"	kind:member	line:43
+gradient_penalty	../models.py	/^def gradient_penalty(critic, h_s, h_t):$/;"	kind:function	line:11
+load_model	../DANN.py	/^    def load_model(self, path=".\/saved_DANN\/"):$/;"	kind:member	line:150
+load_model	../SAN.py	/^    def load_model():$/;"	kind:member	line:21
+load_model	../WADA.py	/^    def load_model(self, path=".\/saved_WADA\/"):$/;"	kind:member	line:191
+load_model	../WDGRL.py	/^    def load_model(self, path=".\/saved_WDGRL\/"):$/;"	kind:member	line:165
+load_model	../main.py	/^    def load_model(self, path=".\/saved_WADA\/"):$/;"	kind:member	line:189
+log_interval	../DANN.py	/^    log_interval = 20$/;"	kind:variable	line:223
+log_interval	../SAN.py	/^    log_interval = 10$/;"	kind:variable	line:33
+log_interval	../WADA.py	/^    log_interval = 10$/;"	kind:variable	line:270
+log_interval	../WDGRL.py	/^    log_interval = 10$/;"	kind:variable	line:240
+log_interval	../main.py	/^    log_interval = 10$/;"	kind:variable	line:266
+main.py	../main.py	1;"	kind:file	line:1
+model	../DANN.py	/^    model = DANN(components, optimizers, dataloaders,$/;"	kind:variable	line:275
+model	../WADA.py	/^    model = WADA(components, optimizers, dataloaders, criterions,$/;"	kind:variable	line:337
+model	../WDGRL.py	/^    model = WDGRL(components, optimizers, dataloaders, criterions,$/;"	kind:variable	line:289
+model	../main.py	/^    model = WDGRL(components, optimizers, dataloaders, criterions,$/;"	kind:variable	line:319
+models.py	../models.py	1;"	kind:file	line:1
+office_root	../dataloaders.py	/^office_root = "..\/dataset\/office"$/;"	kind:variable	line:109
+opt	../DANN.py	/^    opt = torch.optim.Adam([{"params": classifier.parameters()},$/;"	kind:variable	line:261
+optimizers	../DANN.py	/^    optimizers = {"opt": opt}$/;"	kind:variable	line:268
+optimizers	../WADA.py	/^    optimizers = {"c_opt": c_opt, "r_opt": r_opt, "d_opt": d_opt}$/;"	kind:variable	line:333
+optimizers	../WDGRL.py	/^    optimizers = {"c_opt": c_opt, "d_opt": d_opt}$/;"	kind:variable	line:283
+optimizers	../main.py	/^    optimizers = {"c_opt": c_opt, "d_opt": d_opt, "r_opt": r_opt}$/;"	kind:variable	line:313
+partial_mnistm	../partial_preprocess.py	/^def partial_mnistm(mnistm_path="\/home\/neo\/dataset\/mnistm\/"):$/;"	kind:function	line:9
+partial_preprocess.py	../partial_preprocess.py	1;"	kind:file	line:1
+preprocess.py	../preprocess.py	1;"	kind:file	line:1
+process_mnistm	../preprocess.py	/^def process_mnistm(mnistm_path="\/home\/neo\/dataset\/mnistm\/", mnist_path="\/home\/neo\/dataset\/mnist\/"):$/;"	kind:function	line:18
+process_usps	../preprocess.py	/^def process_usps(usps_path="\/home\/neo\/dataset\/usps\/"):$/;"	kind:function	line:50
+r_criterion	../WADA.py	/^    r_criterion = nn.BCELoss()$/;"	kind:variable	line:325
+r_opt	../WADA.py	/^    r_opt = torch.optim.Adam(relater.parameters(), lr=1e-3)$/;"	kind:variable	line:320
+r_opt	../main.py	/^    r_opt = torch.optim.Adam(relater.parameters(), lr=1e-3)$/;"	kind:variable	line:309
+relater	../WADA.py	/^    relater = Relater(encoded_dim=feature_dim).cuda()$/;"	kind:variable	line:305
+relater	../main.py	/^    relater = Relater(encoded_dim=feature_dim).cuda()$/;"	kind:variable	line:300
+relation_criterion	../main.py	/^    relation_criterion = nn.BCELoss()$/;"	kind:variable	line:304
+save_model	../DANN.py	/^    def save_model(self, path=".\/saved_DANN\/"):$/;"	kind:member	line:137
+save_model	../SAN.py	/^    def save_model():$/;"	kind:member	line:19
+save_model	../WADA.py	/^    def save_model(self, path=".\/saved_WADA\/"):$/;"	kind:member	line:171
+save_model	../WDGRL.py	/^    def save_model(self, path=".\/saved_WDGRL\/"):$/;"	kind:member	line:152
+save_model	../main.py	/^    def save_model(self, path=".\/saved_WADA\/"):$/;"	kind:member	line:172
+set_requires_grad	../models.py	/^def set_requires_grad(model, requires_grad=True):$/;"	kind:function	line:6
+source_loader	../DANN.py	/^    source_loader = torch.utils.data.DataLoader(datasets.MNIST($/;"	kind:variable	line:225
+source_loader	../SAN.py	/^    source_loader = torch.utils.data.DataLoader(datasets.MNIST($/;"	kind:variable	line:35
+source_loader	../WADA.py	/^    source_loader = torch.utils.data.DataLoader(datasets.MNIST($/;"	kind:variable	line:274
+source_loader	../WDGRL.py	/^    source_loader = torch.utils.data.DataLoader(datasets.MNIST($/;"	kind:variable	line:242
+source_loader	../main.py	/^    source_loader = torch.utils.data.DataLoader(datasets.MNIST($/;"	kind:variable	line:268
+src_extractor	../WADA.py	/^    src_extractor = Extractor_new(encoded_dim=feature_dim).cuda()$/;"	kind:variable	line:303
+tar_extractor	../WADA.py	/^    tar_extractor = Extractor_new(encoded_dim=feature_dim).cuda()$/;"	kind:variable	line:304
+target_loader	../DANN.py	/^    target_loader = torch.utils.data.DataLoader(USPS($/;"	kind:variable	line:232
+target_loader	../SAN.py	/^    target_loader = torch.utils.data.DataLoader(USPS($/;"	kind:variable	line:42
+target_loader	../WADA.py	/^    target_loader = torch.utils.data.DataLoader(MNISTM($/;"	kind:variable	line:281
+target_loader	../WDGRL.py	/^    target_loader = torch.utils.data.DataLoader(MNISTM($/;"	kind:variable	line:249
+target_loader	../main.py	/^    target_loader = torch.utils.data.DataLoader(MNISTM($/;"	kind:variable	line:275
+test	../DANN.py	/^    def test(self):$/;"	kind:member	line:97
+test	../SAN.py	/^    def test(self):$/;"	kind:member	line:17
+test	../WADA.py	/^    def test(self):$/;"	kind:member	line:130
+test	../WDGRL.py	/^    def test(self):$/;"	kind:member	line:112
+test	../main.py	/^    def test(self):$/;"	kind:member	line:132
+test.py	../test.py	1;"	kind:file	line:1
+test_batch_size	../WADA.py	/^    test_batch_size = 100$/;"	kind:variable	line:271
+test_src_loader	../DANN.py	/^    test_src_loader = torch.utils.data.DataLoader(datasets.MNIST($/;"	kind:variable	line:239
+test_src_loader	../SAN.py	/^    test_src_loader = torch.utils.data.DataLoader(datasets.MNIST($/;"	kind:variable	line:49
+test_src_loader	../WADA.py	/^    test_src_loader = torch.utils.data.DataLoader(datasets.MNIST($/;"	kind:variable	line:288
+test_src_loader	../WDGRL.py	/^    test_src_loader = torch.utils.data.DataLoader(datasets.MNIST($/;"	kind:variable	line:256
+test_src_loader	../main.py	/^    test_src_loader = torch.utils.data.DataLoader(datasets.MNIST($/;"	kind:variable	line:282
+test_tar_loader	../DANN.py	/^    test_tar_loader = torch.utils.data.DataLoader(USPS($/;"	kind:variable	line:246
+test_tar_loader	../SAN.py	/^    test_tar_loader = torch.utils.data.DataLoader(USPS($/;"	kind:variable	line:56
+test_tar_loader	../WADA.py	/^    test_tar_loader = torch.utils.data.DataLoader(MNISTM($/;"	kind:variable	line:295
+test_tar_loader	../WDGRL.py	/^    test_tar_loader = torch.utils.data.DataLoader(MNISTM($/;"	kind:variable	line:263
+test_tar_loader	../main.py	/^    test_tar_loader = torch.utils.data.DataLoader(MNISTM($/;"	kind:variable	line:289
+total_epoch	../DANN.py	/^    total_epoch = 250$/;"	kind:variable	line:220
+total_epoch	../SAN.py	/^    total_epoch = 300$/;"	kind:variable	line:30
+total_epoch	../WADA.py	/^    total_epoch = 100$/;"	kind:variable	line:267
+total_epoch	../WDGRL.py	/^    total_epoch = 100$/;"	kind:variable	line:237
+total_epoch	../main.py	/^    total_epoch = 300$/;"	kind:variable	line:263
+train	../DANN.py	/^    def train(self):$/;"	kind:member	line:34
+train	../SAN.py	/^    def train(self):$/;"	kind:member	line:15
+train	../WADA.py	/^    def train(self):$/;"	kind:member	line:37
+train	../WDGRL.py	/^    def train(self):$/;"	kind:member	line:37
+train	../main.py	/^    def train(self):$/;"	kind:member	line:40
+utils.py	../utils.py	1;"	kind:file	line:1
+visda_real_loader	../dataloaders.py	/^visda_real_loader = torch.utils.data.DataLoader($/;"	kind:variable	line:104
+visda_real_root	../dataloaders.py	/^visda_real_root = "..\/dataset\/visda2018\/validation\/"$/;"	kind:variable	line:96
+visda_syn_loader	../dataloaders.py	/^visda_syn_loader = torch.utils.data.DataLoader($/;"	kind:variable	line:93
+visda_syn_root	../dataloaders.py	/^visda_syn_root = "..\/dataset\/visda2018\/train\/"$/;"	kind:variable	line:86
+visualize	../DANN.py	/^    def visualize(self, dim=2, plot_num=1000):$/;"	kind:member	line:159
+visualize	../SAN.py	/^    def visualize():$/;"	kind:member	line:23
+visualize	../WADA.py	/^    def visualize(self, dim, plot_num):$/;"	kind:member	line:207
+visualize	../WDGRL.py	/^    def visualize(self, dim=2, plot_num=1000):$/;"	kind:member	line:174
+visualize	../main.py	/^    def visualize(self, dim, plot_num):$/;"	kind:member	line:202
+visualize_2d	../utils.py	/^def visualize_2d(save_path, embedding, label, domain, class_num):$/;"	kind:function	line:10
+visualize_3d	../utils.py	/^def visualize_3d(save_path, embedding, label, domain, class_num):$/;"	kind:function	line:50
+xavier	../test.py	/^def xavier(m):$/;"	kind:function	line:28
