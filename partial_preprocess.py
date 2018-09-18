@@ -37,9 +37,36 @@ def partial_mnistm(mnistm_path="/home/neo/dataset/mnistm/"):
     with open(os.path.join(mnistm_path, "partial_mnistm_pytorch_test"), "wb") as f:
         torch.save(partial_test, f)
 
-
     print("Done")
 
-partial_mnistm()
 
+def partial_usps(usps_path="/home/neo/dataset/usps/"):
 
+    train_data, train_label = torch.load(
+        os.path.join(usps_path, "usps_pytorch_train"))
+    test_data, test_label = torch.load(
+        os.path.join(usps_path, "usps_pytorch_test"))
+
+    """ Training Data """
+    idx = np.where(train_label % 3 == 0)
+    train_data = train_data[idx]
+    train_label = train_label[idx]
+
+    """ Testing Data """
+    idx = np.where(test_label % 3 == 0)
+    test_data = test_data[idx]
+    test_label = test_label[idx]
+
+    """ Save Dataset """
+    partial_train = (train_data, train_label)
+    partial_test = (test_data, test_label)
+
+    with open(os.path.join(usps_path, "partial_usps_pytorch_train"), "wb") as f:
+        torch.save(partial_train, f)
+
+    with open(os.path.join(usps_path, "partial_usps_pytorch_test"), "wb") as f:
+        torch.save(partial_test, f)
+    
+    print("Done")
+
+partial_usps()

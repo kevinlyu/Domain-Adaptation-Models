@@ -13,19 +13,28 @@ class MNISTM(Dataset):
     Definition of MNISTM dataset
     '''
 
-    def __init__(self, root="/home/neo/dataset/mnistm/", train=True, transform=None, target_transform=None):
+    def __init__(self, root="/home/neo/dataset/mnistm/", train=True, partial=False, transform=None, target_transform=None):
         super(MNISTM, self).__init__()
         self.root = root
         self.transform = transform
         self.target_transform = target_transform
         self.train = train
+        self.partial = partial
 
         if self.train:
-            self.data, self.label = torch.load(
-                os.path.join(self.root, "mnistm_pytorch_train"))
+            if not self.partial:
+                self.data, self.label = torch.load(
+                    os.path.join(self.root, "mnistm_pytorch_train"))
+            else:
+                self.data, self.label = torch.load(
+                    os.path.join(self.root, "partial_mnistm_pytorch_train"))
         else:
-            self.data, self.label = torch.load(
-                os.path.join(self.root, "mnistm_pytorch_test"))
+            if not self.partial:
+                self.data, self.label = torch.load(
+                    os.path.join(self.root, "mnistm_pytorch_test"))
+            else:
+                self.data, self.label = torch.load(
+                    os.path.join(self.root, "partial_mnistm_pytorch_test"))
 
     def __getitem__(self, index):
 
@@ -50,19 +59,28 @@ class USPS(Dataset):
     Definition of USPS dataset
     '''
 
-    def __init__(self, root="/home/neo/dataset/usps/", train=True, transform=None, target_transform=None):
+    def __init__(self, root="/home/neo/dataset/usps/", train=True, partial=False, transform=None, target_transform=None):
         super(USPS, self).__init__()
         self.root = root
         self.transform = transform
         self.target_transform = target_transform
         self.train = train
+        self.partial = partial
 
         if self.train:
-            self.data, self.label = torch.load(
-                os.path.join(self.root, "usps_pytorch_train"))
+            if not self.partial:
+                self.data, self.label = torch.load(
+                    os.path.join(self.root, "usps_pytorch_train"))
+            else:
+                self.data, self.label = torch.load(
+                    os.path.join(self.root, "partial_usps_pytorch_train"))
         else:
-            self.data, self.label = torch.load(
-                os.path.join(self.root, "usps_pytorch_test"))
+            if not self.partial:
+                self.data, self.label = torch.load(
+                    os.path.join(self.root, "usps_pytorch_test"))
+            else:
+                self.data, self.label = torch.load(
+                    os.path.join(self.root, "partial_usps_pytorch_test"))
 
     def __getitem__(self, index):
         data, label = self.data[index], self.label[index]
@@ -105,6 +123,7 @@ visda_real_loader = torch.utils.data.DataLoader(
     VisdaReal, batch_size=100, shuffle=True, num_workers=4)
 
 
-# Office 
+# Office
 office_root = "../dataset/office"
+
 # Caltech
