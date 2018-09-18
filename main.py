@@ -70,8 +70,8 @@ class WDGRL:
                 pred_class = self.classifier(src_z)
                 class_loss = self.class_criterion(pred_class, src_label)
 
-                wasserstein_diatance = self.relater(src_z).mean()*self.discriminator(
-                    src_z).mean() - self.discriminator(tar_z).mean()
+                wasserstein_diatance = (self.discriminator(
+                    src_z)*self.relater(src_z)).mean() - self.discriminator(tar_z).mean()
 
                 loss = class_loss + wasserstein_diatance
                 c_opt.zero_grad()
@@ -113,7 +113,8 @@ class WDGRL:
                     d_src_loss = self.discriminator(src_z)
                     d_tar_loss = self.discriminator(tar_z)
 
-                    wasserstein_distance = r.mean()*d_src_loss.mean()-d_tar_loss.mean()
+                    wasserstein_distance = (
+                        d_src_loss*self.relater(src_z)).mean()-d_tar_loss.mean()
 
                     domain_loss = -wasserstein_distance + 10*gp
 
@@ -259,7 +260,7 @@ if __name__ == "__main__":
     print("WADA model dev ver")
 
     batch_size = 150
-    total_epoch = 100
+    total_epoch = 300
     feature_dim = 1000
     class_num = 10
     log_interval = 10
