@@ -152,7 +152,7 @@ class Discriminator(nn.Module):
             #nn.Linear(self.encoded_dim, 64),
             #nn.Linear(64*5*5, 64),
             nn.Linear(32*4*4, 64),
-            #nn.BatchNorm1d(64),
+            # nn.BatchNorm1d(64),
             nn.ReLU(),
             nn.Linear(64, 2),
             nn.LogSoftmax(1)
@@ -242,3 +242,32 @@ class Relater(nn.Module):
 
     def forward(self, x):
         return self.distinguish(x)
+
+
+class AutoEncoder(nn.Module):
+
+    def __init__(self, in_channels=16, lrelu_slope=0.2):
+        super(AutoEncoder, self).__init__()
+        self.in_channels = in_channels
+        self.lrelu_slope = lrelu_slope
+
+        self.encoder = nn.Sequential(
+            nn.Conv2d(3, self.in_channels, 5),
+            nn.BatchNorm2d(self.in_channels),
+            nn.MaxPool2d(2),
+            nn.LeakyReLU(self.lrelu_slope),
+            nn.Conv2d(self.in_channels, self.in_channels//2, 5),
+            nn.BatchNorm2d(self.in_channels//2),
+            nn.Dropout2d(),
+            nn.MaxPool2d(2)
+        )
+
+        self.decoder = nn.Sequential(
+            nn.ConvTranspose2d(self.in_channels//2, self.in_channels, 5),
+            nn.LeakyReLU(self.lrelu_slope),
+            nn.ConvTranspose2d(self.in_channels, ),
+        )
+
+    def forward(self, x):
+        z = self.encoder(x)
+        x = self.decoder(z)

@@ -11,7 +11,7 @@ from PIL import Image
 import matplotlib.pyplot as plt
 
 
-class WDGRL:
+class WADA_II:
 
     def __init__(self, components, optimizers, dataloaders, criterions, total_epoch, feature_dim, class_num, log_interval):
         self.extractor = components["extractor"]
@@ -70,10 +70,13 @@ class WDGRL:
                 pred_class = self.classifier(src_z)
                 class_loss = self.class_criterion(pred_class, src_label)
 
-                wasserstein_diatance = (self.discriminator(
-                    src_z)*self.relater(src_z)).mean() - self.discriminator(tar_z).mean()
+                with torch.no_grad():
+                    r = self.relater(src_z)
 
-                loss = class_loss + wasserstein_diatance
+                wasserstein_diatance = self.discriminator(
+                    src_z).mean() - self.discriminator(tar_z).mean()
+
+                loss = class_loss + r.mean()*wasserstein_diatance
                 c_opt.zero_grad()
                 loss.backward(retain_graph=True)
                 c_opt.step()
@@ -88,10 +91,10 @@ class WDGRL:
                 tar_r = self.relater(tar_z)
 
                 r_src_loss = self.relation_criterion(
-                    src_r, torch.zeros(src_r.size(0), 1).type(torch.FloatTensor).cuda())
+                    src_r, torch.ones(src_r.size(0), 1).type(torch.FloatTensor).cuda())
 
                 r_tar_loss = self.relation_criterion(
-                    tar_r, torch.ones(tar_r.size(0), 1).type(torch.FloatTensor).cuda())
+                    tar_r, torch.zeros(tar_r.size(0), 1).type(torch.FloatTensor).cuda())
 
                 r_loss = r_src_loss + r_tar_loss
                 self.r_opt.zero_grad()
@@ -113,10 +116,12 @@ class WDGRL:
                     d_src_loss = self.discriminator(src_z)
                     d_tar_loss = self.discriminator(tar_z)
 
-                    wasserstein_distance = (
-                        d_src_loss*self.relater(src_z)).mean()-d_tar_loss.mean()
+                    wasserstein_distance = d_src_loss.mean()-d_tar_loss.mean()
 
-                    domain_loss = -wasserstein_distance + 10*gp
+                    with torch.no_grad():
+                        r = self.relater(src_z)
+
+                    domain_loss = -r.mean()*wasserstein_distance + 10*gp
 
                     d_opt.zero_grad()
                     domain_loss.backward()
@@ -259,7 +264,7 @@ class WDGRL:
 if __name__ == "__main__":
     print("WADA model dev ver")
 
-    batch_size = 150
+    batch_size = 50
     total_epoch = 300
     feature_dim = 1000
     class_num = 10
@@ -272,12 +277,12 @@ if __name__ == "__main__":
             transforms.Normalize((0.5, 0.5, 0.5), (0.5, 0.5, 0.5))
         ])), batch_size=batch_size, shuffle=True)
 
-    target_loader = torch.utils.data.DataLoader(MNISTM(
+    target_loader = torch.utils.data.DataLoader(USPS(
         transform=transforms.Compose([
             transforms.Resize(28),
             transforms.ToTensor(),
             transforms.Normalize((0.5, 0.5, 0.5), (0.5, 0.5, 0.5)),
-        ]), train=True), batch_size=batch_size, shuffle=True)
+        ]), train=True, partial=True), batch_size=batch_size, shuffle=True)
 
     test_src_loader = torch.utils.data.DataLoader(datasets.MNIST(
         "../dataset/mnist/", train=False, download=True,
@@ -286,12 +291,12 @@ if __name__ == "__main__":
             transforms.Normalize((0.5, 0.5, 0.5), (0.5, 0.5, 0.5)),
         ])), batch_size=batch_size, shuffle=True)
 
-    test_tar_loader = torch.utils.data.DataLoader(MNISTM(
+    test_tar_loader = torch.utils.data.DataLoader(USPS(
         transform=transforms.Compose([
             transforms.Resize(28),
             transforms.ToTensor(),
             transforms.Normalize((0.5, 0.5, 0.5), (0.5, 0.5, 0.5)),
-        ]), train=False),  batch_size=batch_size, shuffle=True)
+        ]), train=False, partial=True),  batch_size=batch_size, shuffle=True)
 
     extractor = Extractor_new(encoded_dim=feature_dim).cuda()
     classifier = Classifier(encoded_dim=feature_dim,
@@ -316,8 +321,8 @@ if __name__ == "__main__":
 
     criterions = {"class": class_criterion, "relation": relation_criterion}
 
-    model = WDGRL(components, optimizers, dataloaders, criterions,
-                  total_epoch, feature_dim, class_num, log_interval)
+    model = WADA_II(components, optimizers, dataloaders, criterions,
+                    total_epoch, feature_dim, class_num, log_interval)
     # model.load_model()
     model.train()
     model.save_model()

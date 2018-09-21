@@ -63,7 +63,7 @@ class WDGRL:
 
                 src_z = self.extractor(src_data)
                 tar_z = self.extractor(tar_data)
-                    
+
                 pred_class = self.classifier(src_z)
                 class_loss = self.class_criterion(pred_class, src_label)
 
@@ -215,11 +215,11 @@ class WDGRL:
         tsne = TSNE(n_components=dim)
 
         embedding = tsne.fit_transform(data)
-        
+
         embedding_max, embedding_min = np.max(
             embedding, 0), np.min(embedding, 0)
         embedding = (embedding-embedding_min) / (embedding_max - embedding_min)
-        
+
         if dim == 2:
             visualize_2d("./saved_WDGRL/", embedding,
                          label, tag, self.class_num)
@@ -234,7 +234,7 @@ if __name__ == "__main__":
     print("WDGRL model")
 
     batch_size = 150
-    total_epoch = 100
+    total_epoch = 200
     feature_dim = 1000
     class_num = 10
     log_interval = 10
@@ -246,12 +246,12 @@ if __name__ == "__main__":
             transforms.Normalize((0.5, 0.5, 0.5), (0.5, 0.5, 0.5))
         ])), batch_size=batch_size, shuffle=True)
 
-    target_loader = torch.utils.data.DataLoader(MNISTM(
+    target_loader = torch.utils.data.DataLoader(USPS(
         transform=transforms.Compose([
             transforms.Resize(28),
             transforms.ToTensor(),
             transforms.Normalize((0.5, 0.5, 0.5), (0.5, 0.5, 0.5)),
-        ]), train=True), batch_size=batch_size, shuffle=True)
+        ]), train=True, partial=True), batch_size=batch_size, shuffle=True)
 
     test_src_loader = torch.utils.data.DataLoader(datasets.MNIST(
         "../dataset/mnist/", train=False, download=True,
@@ -260,12 +260,12 @@ if __name__ == "__main__":
             transforms.Normalize((0.5, 0.5, 0.5), (0.5, 0.5, 0.5)),
         ])), batch_size=batch_size, shuffle=True)
 
-    test_tar_loader = torch.utils.data.DataLoader(MNISTM(
+    test_tar_loader = torch.utils.data.DataLoader(USPS(
         transform=transforms.Compose([
             transforms.Resize(28),
             transforms.ToTensor(),
             transforms.Normalize((0.5, 0.5, 0.5), (0.5, 0.5, 0.5)),
-        ]), train=False),  batch_size=batch_size, shuffle=True)
+        ]), train=False, partial=True),  batch_size=batch_size, shuffle=True)
 
     extractor = Extractor_new(encoded_dim=feature_dim).cuda()
     classifier = Classifier(encoded_dim=feature_dim,
@@ -275,8 +275,8 @@ if __name__ == "__main__":
     class_criterion = nn.CrossEntropyLoss()
 
     c_opt = torch.optim.RMSprop([{"params": classifier.parameters()},
-                              {"params": extractor.parameters()}], lr=1e-4)
-    d_opt = torch.optim.RMSprop(discriminator.parameters(), lr=1e-4)
+                                 {"params": extractor.parameters()}], lr=1e-3)
+    d_opt = torch.optim.RMSprop(discriminator.parameters(), lr=1e-3)
 
     components = {"extractor": extractor,
                   "classifier": classifier, "discriminator": discriminator}

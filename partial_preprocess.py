@@ -22,10 +22,16 @@ def partial_mnistm(mnistm_path="/home/neo/dataset/mnistm/"):
     train_data = train_data[idx]
     train_label = train_label[idx]
 
+    train_data = torch.from_numpy(train_data)
+    train_label = torch.from_numpy(train_label)
+
     """ Testing Data """
     idx = np.where(test_label % 3 == 0)
     test_data = test_data[idx]
     test_label = test_label[idx]
+
+    test_data = torch.from_numpy(test_data)
+    test_label = torch.from_numpy(test_label)
 
     """ Save Dataset """
     partial_train = (train_data, train_label)
@@ -70,3 +76,4 @@ def partial_usps(usps_path="/home/neo/dataset/usps/"):
     print("Done")
 
 partial_usps()
+partial_mnistm()

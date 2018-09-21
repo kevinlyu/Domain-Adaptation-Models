@@ -39,6 +39,7 @@ class WADA:
         for epoch in range(self.total_epoch):
             for index, (src, tar) in enumerate(zip(self.src_loader, self.tar_loader)):
 
+                """ get data """
                 src_data, src_label = src
                 tar_data, tar_label = tar
 
@@ -68,14 +69,13 @@ class WADA:
 
                 with torch.no_grad():
                     r = self.relater(src_z)
-
-                d_src_loss = self.discriminator(src_z)
-                d_tar_loss = self.discriminator(tar_z)
+                    d_src_loss = self.discriminator(src_z)
+                    d_tar_loss = self.discriminator(tar_z)
 
                 #print("Classifier r.mean()= {}".format(r.mean()))
                 w2_distance = (d_src_loss.mean() - d_tar_loss.mean())
 
-                c_loss = pred_loss + w2_distance
+                c_loss = pred_loss + r.mean()*w2_distance
                 c_loss.backward()
                 self.c_opt.step()
 
@@ -89,10 +89,10 @@ class WADA:
                 r_src = self.relater(src_z)
                 r_tar = self.relater(tar_z)
 
-                r_loss_src = self.r_criterion(r_src, torch.zeros(
+                r_loss_src = self.r_criterion(r_src, torch.ones(
                     r_src.size(0), 1).type(torch.FloatTensor).cuda())
 
-                r_loss_tar = self.r_criterion(r_tar, torch.ones(
+                r_loss_tar = self.r_criterion(r_tar, torch.zeros(
                     r_tar.size(0), 1).type(torch.FloatTensor).cuda())
 
                 r_loss = r_loss_src + r_loss_tar
@@ -113,7 +113,7 @@ class WADA:
                     #d_src_loss *= r
                     w2_distance = (d_src_loss.mean() - d_tar_loss.mean())
 
-                    d_loss = -w2_distance + 10*gp
+                    d_loss = -r.mean()*w2_distance + 10*gp
                     d_loss.backward()
                     self.d_opt.step()
 
