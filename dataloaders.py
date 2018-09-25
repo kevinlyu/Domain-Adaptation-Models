@@ -100,6 +100,7 @@ class USPS(Dataset):
         return len(self.data)
 
 
+########################################################################
 # VisDA 2018
 visda_syn_root = "../dataset/visda2018/train/"
 VisdaSyn = torchvision.datasets.ImageFolder(visda_syn_root, transform=transforms.Compose([
@@ -123,7 +124,61 @@ visda_real_loader = torch.utils.data.DataLoader(
     VisdaReal, batch_size=100, shuffle=True, num_workers=4)
 
 
-# Office
-office_root = "../dataset/office"
+########################################################################
 
-# Caltech
+def get_office_loader(domain, class_num=31, train=True, partial=False):
+
+    if class_num == 31:
+        path = "../dataset/office31/"
+    elif class_num == 10:
+        path = "../dataset/office_caltech_10/"
+
+    if domain == "amazon":
+        Office_amazon = torchvision.datasets.ImageFolder(os.path.join(
+            path, "amazon"), transform=transforms.Compose([
+                transforms.Resize((120, 120)),
+                transforms.CenterCrop((100, 100)),
+                transforms.ToTensor(),
+                transforms.Normalize((0.5, 0.5, 0.5), (0.5, 0.5, 0.5))
+            ]))
+
+        loader = torch.utils.data.DataLoader(
+            Office_amazon, batch_size=50, shuffle=True, num_workers=1)
+
+    elif domain == "dslr":
+        Office_dslr = torchvision.datasets.ImageFolder(os.path.join(
+            path, "dslr"), transform=transforms.Compose([
+                transforms.Resize((120, 120)),
+                transforms.CenterCrop((100, 100)),
+                transforms.ToTensor(),
+                transforms.Normalize((0.5, 0.5, 0.5), (0.5, 0.5, 0.5))
+            ]))
+
+        loader = torch.utils.data.DataLoader(
+            Office_dslr, batch_size=50, shuffle=True, num_workers=1)
+
+    elif domain == "webcam":
+        Office_webcam = torchvision.datasets.ImageFolder(os.path.join(
+            path, "webcam"), transform=transforms.Compose([
+                transforms.Resize((120, 120)),
+                transforms.CenterCrop((100, 100)),
+                transforms.ToTensor(),
+                transforms.Normalize((0.5, 0.5, 0.5), (0.5, 0.5, 0.5))
+            ]))
+
+        loader = torch.utils.data.DataLoader(
+            Office_webcam, batch_size=50, shuffle=True, num_workers=1)
+
+    elif domain == "caltech":
+        Caltech = torchvision.datasets.ImageFolder(os.path.join(
+            path, "caltech"), transform=transforms.Compose([
+                transforms.Resize((120, 120)),
+                transforms.CenterCrop((100, 100)),
+                transforms.ToTensor(),
+                transforms.Normalize((0.5, 0.5, 0.5), (0.5, 0.5, 0.5))
+            ]))
+
+        loader = torch.utils.data.DataLoader(
+            Caltech, batch_size=50, shuffle=True, num_workers=1)
+
+    return loader

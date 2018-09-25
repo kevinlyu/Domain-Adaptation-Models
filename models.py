@@ -271,3 +271,5 @@ class AutoEncoder(nn.Module):
     def forward(self, x):
         z = self.encoder(x)
         x = self.decoder(z)
+
+

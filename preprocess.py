@@ -83,6 +83,5 @@ def process_usps(usps_path="/home/neo/dataset/usps/"):
 
     print("Done")
 
-
 # process_mnistm()
 # process_usps()
