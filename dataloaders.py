@@ -47,6 +47,7 @@ class MNISTM(Dataset):
         if self.target_transform is not None:
             label = self.target_transform(label)
 
+        print(data.size)
         return data, label
 
     def __len__(self):
@@ -125,60 +126,142 @@ visda_real_loader = torch.utils.data.DataLoader(
 
 
 ########################################################################
-
-def get_office_loader(domain, class_num=31, train=True, partial=False):
-
-    if class_num == 31:
-        path = "../dataset/office31/"
-    elif class_num == 10:
-        path = "../dataset/office_caltech_10/"
+def get_office_loader(domain, partial, batch_size=50):
 
     if domain == "amazon":
-        Office_amazon = torchvision.datasets.ImageFolder(os.path.join(
-            path, "amazon"), transform=transforms.Compose([
-                transforms.Resize((120, 120)),
-                transforms.CenterCrop((100, 100)),
+        loader = torch.utils.data.DataLoader(Amazon(
+            transform=transforms.Compose([
+                transforms.Resize(100),
                 transforms.ToTensor(),
-                transforms.Normalize((0.5, 0.5, 0.5), (0.5, 0.5, 0.5))
-            ]))
-
-        loader = torch.utils.data.DataLoader(
-            Office_amazon, batch_size=50, shuffle=True, num_workers=1)
-
-    elif domain == "dslr":
-        Office_dslr = torchvision.datasets.ImageFolder(os.path.join(
-            path, "dslr"), transform=transforms.Compose([
-                transforms.Resize((120, 120)),
-                transforms.CenterCrop((100, 100)),
-                transforms.ToTensor(),
-                transforms.Normalize((0.5, 0.5, 0.5), (0.5, 0.5, 0.5))
-            ]))
-
-        loader = torch.utils.data.DataLoader(
-            Office_dslr, batch_size=50, shuffle=True, num_workers=1)
+                #transforms.Normalize((0.5, 0.5, 0.5), (0.5, 0.5, 0.5)),
+            ]), partial=partial), batch_size=batch_size, shuffle=True)
 
     elif domain == "webcam":
-        Office_webcam = torchvision.datasets.ImageFolder(os.path.join(
-            path, "webcam"), transform=transforms.Compose([
-                transforms.Resize((120, 120)),
-                transforms.CenterCrop((100, 100)),
+        loader = torch.utils.data.DataLoader(Webcam(
+            transform=transforms.Compose([
+                transforms.Resize(100),
                 transforms.ToTensor(),
-                transforms.Normalize((0.5, 0.5, 0.5), (0.5, 0.5, 0.5))
-            ]))
+                #transforms.Normalize((0.5, 0.5, 0.5), (0.5, 0.5, 0.5)),
+            ]), partial=partial), batch_size=batch_size, shuffle=True)
 
-        loader = torch.utils.data.DataLoader(
-            Office_webcam, batch_size=50, shuffle=True, num_workers=1)
-
-    elif domain == "caltech":
-        Caltech = torchvision.datasets.ImageFolder(os.path.join(
-            path, "caltech"), transform=transforms.Compose([
-                transforms.Resize((120, 120)),
-                transforms.CenterCrop((100, 100)),
+    elif domain == "dslr":
+        loader = torch.utils.data.DataLoader(DSLR(
+            transform=transforms.Compose([
+                transforms.Resize(100),
                 transforms.ToTensor(),
-                transforms.Normalize((0.5, 0.5, 0.5), (0.5, 0.5, 0.5))
-            ]))
-
-        loader = torch.utils.data.DataLoader(
-            Caltech, batch_size=50, shuffle=True, num_workers=1)
+                #transforms.Normalize((0.5, 0.5, 0.5), (0.5, 0.5, 0.5)),
+            ]), partial=partial), batch_size=batch_size, shuffle=True)
 
     return loader
+
+
+class Amazon(Dataset):
+
+    def __init__(self, root="../dataset/office31/", train=True, partial=False, transform=None, target_transform=None):
+        super(Amazon, self).__init__()
+        self.root = root
+        self.train = train
+        self.partial = partial
+        self.transform = transform
+        self.target_transform = target_transform
+
+        if self.partial:
+            amazon = np.load(os.path.join(self.root, "amazon10.npz"))
+        else:
+            amazon = np.load(os.path.join(self.root, "amazon31.npz"))
+
+        self.data, self.label = amazon["data"], amazon["label"]
+
+    def __getitem__(self, index):
+
+        data, label = self.data[index], self.label[index]
+        data *= 255.0
+        data = Image.fromarray(np.uint8(data), mode="RGB")
+
+        if self.transform is not None:
+            data = self.transform(data)
+
+        if self.target_transform is not None:
+            label = self.target_transform(label)
+
+        return data, label
+
+    def __len__(self):
+        return (len(self.label))
+
+
+class Webcam(Dataset):
+
+    def __init__(self, root="../dataset/office31/", train=True, partial=False, transform=None, target_transform=None):
+        super(Webcam, self).__init__()
+        self.root = root
+        self.train = train
+        self.partial = partial
+        self.transform = transform
+        self.target_transform = target_transform
+
+        if self.partial:
+            amazon = np.load(os.path.join(self.root, "webcam10.npz"))
+        else:
+            amazon = np.load(os.path.join(self.root, "webcam31.npz"))
+
+        self.data, self.label = amazon["data"], amazon["label"]
+
+    def __getitem__(self, index):
+
+        data, label = self.data[index], self.label[index]
+        data *= 255.0
+        data = Image.fromarray(np.uint8(data), mode="RGB")
+
+        if self.transform is not None:
+            data = self.transform(data)
+
+        if self.target_transform is not None:
+            label = self.target_transform(label)
+
+        return data, label
+
+    def __len__(self):
+        return (len(self.label))
+
+
+class DSLR(Dataset):
+
+    def __init__(self, root="../dataset/office31/", train=True, partial=False, transform=None, target_transform=None):
+        super(DSLR, self).__init__()
+        self.root = root
+        self.train = train
+        self.partial = partial
+        self.transform = transform
+        self.target_transform = target_transform
+
+        if self.partial:
+            amazon = np.load(os.path.join(self.root, "dslr10.npz"))
+        else:
+            amazon = np.load(os.path.join(self.root, "dslr31.npz"))
+
+        self.data, self.label = amazon["data"], amazon["label"]
+
+    def __getitem__(self, index):
+
+        data, label = self.data[index], self.label[index]
+        data *= 255.0
+        data = Image.fromarray(np.uint8(data), mode="RGB")
+
+        if self.transform is not None:
+            data = self.transform(data)
+
+        if self.target_transform is not None:
+            label = self.target_transform(label)
+
+        return data, label
+
+    def __len__(self):
+        return (len(self.label))
+
+
+if __name__ == "__main__":
+
+    f = MNISTM()
+    for idx, data in enumerate(f):
+        img, label = data

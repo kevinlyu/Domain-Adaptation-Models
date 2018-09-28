@@ -22,16 +22,21 @@ class Extractor_Office(nn.Module):
             nn.MaxPool2d(2),
             nn.LeakyReLU(self.lrelu_slope),
 
-            nn.Conv2d(self.in_channels//2, self.in_channels//4, 5),
+            nn.Conv2d(self.in_channels//2, self.in_channels//4, 3),
             nn.BatchNorm2d(self.in_channels//4),
+            nn.MaxPool2d(2),
+            nn.LeakyReLU(self.lrelu_slope),
+
+            nn.Conv2d(self.in_channels//4, self.in_channels//8, 3),
+            nn.BatchNorm2d(self.in_channels//8),
             nn.Dropout2d(),
             nn.MaxPool2d(2),
-            nn.LeakyReLU(self.lrelu_slope)
+            nn.LeakyReLU(self.lrelu_slope),
         )
 
     def forward(self, x):
         z = self.extract(x)
-        z = z.view(-1, 32*9*9)
+        z = z.view(-1, 16*4*4)
         return z
 
 
@@ -42,16 +47,16 @@ class Classifier_Office(nn.Module):
         self.class_num = class_num
 
         self.classify = nn.Sequential(
-            nn.Linear(32*9*9, 100),
-            #nn.Linear(1000, 100),
-            nn.BatchNorm1d(100),
-            nn.ReLU(),
-            # added
-            #nn.Dropout(),
-            nn.Linear(100, 50),
+            #nn.Linear(32*9*9, 100),
+            nn.Linear(16*4*4, 50),
             nn.BatchNorm1d(50),
             nn.ReLU(),
-            nn.Linear(50, self.class_num),
+            # added
+            # nn.Dropout(),
+            nn.Linear(50, 32),
+            nn.BatchNorm1d(32),
+            nn.ReLU(),
+            nn.Linear(32, self.class_num),
             nn.LogSoftmax(1)
         )
 
@@ -66,11 +71,11 @@ class Discriminator_Office(nn.Module):
         super(Discriminator_Office, self).__init__()
 
         self.classify = nn.Sequential(
-            nn.Linear(32*9*9, 64),
-            #nn.Linear(1000, 64),
-            nn.BatchNorm1d(64),
+            #nn.Linear(32*9*9, 64),
+            nn.Linear(16*4*4, 32),
+            #nn.BatchNorm1d(32),
             nn.ReLU(),
-            nn.Linear(64, 1),
+            nn.Linear(32, 1),
         )
 
     def forward(self, x):
@@ -85,13 +90,14 @@ class Relater_Office(nn.Module):
         super(Relater_Office, self).__init__()
 
         self.distinguish = nn.Sequential(
-            nn.Linear(32*9*9, 100),
-            #nn.Linear(1000, 100),
-            nn.BatchNorm1d(100),
+            #nn.Linear(32*9*9, 100),
+            nn.Linear(16*4*4, 50),
+            nn.BatchNorm1d(50),
             nn.ReLU(),
-            nn.Linear(100, 20),
+            nn.Linear(50, 25),
+            nn.Dropout(),
             nn.ReLU(),
-            nn.Linear(20, 1),
+            nn.Linear(25, 1),
             nn.Sigmoid()
         )
 

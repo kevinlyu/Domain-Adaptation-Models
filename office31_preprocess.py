@@ -10,6 +10,7 @@ labels = None
 
 domains = ["amazon", "dslr", "webcam"]
 
+
 def process_image(image, weight, hight):
     img = io.imread(image)
     img = transform.resize(img, (weight, hight), mode="reflect")
@@ -29,7 +30,7 @@ for d in domains:
             processed_images = io.ImageCollection(
                 workdir + "/*.jpg", load_func=process_image, weight=weight, hight=hight)
             label = np.full(len(processed_images),
-                            fill_value=index, dtype=np.int32)
+                            fill_value=index, dtype=np.int64)
             images = io.concatenate_images(processed_images)
 
             if index == 0:
@@ -43,5 +44,16 @@ for d in domains:
     print(np.shape(data))
     print(np.shape(labels))
 
+    partial = [0, 1, 5, 10, 11, 12, 15, 16, 17, 22]
+    idx = np.where(np.isin(labels, partial))
+    data_p = data[idx]
+    label_p = labels[idx]
+    
+    print(np.shape(data_p))
+    print(np.shape(label_p))
+    
+    np.savez("../dataset/office31/"+d+"10.npz",
+             data=data_p, label=label_p)
+    print("Saved {}10.npz. It's length is {}".format(d, len(labels[idx])))
     np.savez("../dataset/office31/"+d+"31.npz", data=data, label=labels)
-    print("saved " + d + "31.npz")
+    print("Saved {}31.npz. It's length is {}".format(d, len(labels)))
