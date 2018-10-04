@@ -12,31 +12,31 @@ class Extractor_Office(nn.Module):
         self.in_channels = in_channels
 
         self.extract = nn.Sequential(
-            nn.Conv2d(3, self.in_channels, 5),
-            nn.BatchNorm2d(self.in_channels),
+            nn.Conv2d(3, self.in_channels//16, 7),
+            nn.BatchNorm2d(self.in_channels//16),
             nn.MaxPool2d(2),
             nn.LeakyReLU(self.lrelu_slope),
 
-            nn.Conv2d(self.in_channels, self.in_channels//2, 5),
-            nn.BatchNorm2d(self.in_channels//2),
+            nn.Conv2d(self.in_channels//16, self.in_channels//8, 7),
+            nn.BatchNorm2d(self.in_channels//8),
             nn.MaxPool2d(2),
             nn.LeakyReLU(self.lrelu_slope),
 
-            nn.Conv2d(self.in_channels//2, self.in_channels//4, 3),
+            nn.Conv2d(self.in_channels//8, self.in_channels//4, 5),
             nn.BatchNorm2d(self.in_channels//4),
             nn.MaxPool2d(2),
             nn.LeakyReLU(self.lrelu_slope),
 
-            nn.Conv2d(self.in_channels//4, self.in_channels//8, 3),
-            nn.BatchNorm2d(self.in_channels//8),
-            nn.Dropout2d(),
+            nn.Conv2d(self.in_channels//4, self.in_channels//2, 5),
+            nn.BatchNorm2d(self.in_channels//2),
             nn.MaxPool2d(2),
             nn.LeakyReLU(self.lrelu_slope),
         )
 
     def forward(self, x):
         z = self.extract(x)
-        z = z.view(-1, 16*4*4)
+        #print(z.shape)
+        z = z.view(-1, 64*9*9)
         return z
 
 
@@ -48,15 +48,17 @@ class Classifier_Office(nn.Module):
 
         self.classify = nn.Sequential(
             #nn.Linear(32*9*9, 100),
-            nn.Linear(16*4*4, 50),
-            nn.BatchNorm1d(50),
+            nn.Linear(64*9*9, 1024),
+            nn.BatchNorm1d(1024),
             nn.ReLU(),
-            # added
-            # nn.Dropout(),
-            nn.Linear(50, 32),
-            nn.BatchNorm1d(32),
+            nn.Linear(1024, 512),
+            nn.BatchNorm1d(512),
             nn.ReLU(),
-            nn.Linear(32, self.class_num),
+            nn.Linear(512, 256),
+            nn.BatchNorm1d(256),
+            nn.ReLU(),
+            nn.Dropout(),
+            nn.Linear(256, self.class_num),
             nn.LogSoftmax(1)
         )
 
@@ -72,10 +74,16 @@ class Discriminator_Office(nn.Module):
 
         self.classify = nn.Sequential(
             #nn.Linear(32*9*9, 64),
-            nn.Linear(16*4*4, 32),
-            #nn.BatchNorm1d(32),
+            nn.Linear(64*9*9, 128),
+            nn.BatchNorm1d(128),
             nn.ReLU(),
-            nn.Linear(32, 1),
+            nn.Linear(128, 64),
+            nn.BatchNorm1d(64),
+            nn.ReLU(),
+            nn.Linear(64, 32),
+            nn.BatchNorm1d(32),
+            nn.ReLU(),
+            nn.Linear(32, 1)
         )
 
     def forward(self, x):
@@ -91,13 +99,13 @@ class Relater_Office(nn.Module):
 
         self.distinguish = nn.Sequential(
             #nn.Linear(32*9*9, 100),
-            nn.Linear(16*4*4, 50),
-            nn.BatchNorm1d(50),
+            nn.Linear(64*9*9, 100),
+            nn.BatchNorm1d(100),
             nn.ReLU(),
-            nn.Linear(50, 25),
+            nn.Linear(100, 31),
             nn.Dropout(),
             nn.ReLU(),
-            nn.Linear(25, 1),
+            nn.Linear(31, 1),
             nn.Sigmoid()
         )
 

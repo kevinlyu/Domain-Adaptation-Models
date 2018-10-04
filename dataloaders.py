@@ -5,7 +5,7 @@ import torch
 import torchvision
 from PIL import Image
 from torch.utils.data import Dataset
-from torchvision import datasets, transforms
+from torchvision import datasets, transforms, utils
 
 
 class MNISTM(Dataset):
@@ -47,7 +47,6 @@ class MNISTM(Dataset):
         if self.target_transform is not None:
             label = self.target_transform(label)
 
-        print(data.size)
         return data, label
 
     def __len__(self):
@@ -131,25 +130,27 @@ def get_office_loader(domain, partial, batch_size=50):
     if domain == "amazon":
         loader = torch.utils.data.DataLoader(Amazon(
             transform=transforms.Compose([
-                transforms.Resize(100),
+                transforms.CenterCrop(224),
                 transforms.ToTensor(),
-                #transforms.Normalize((0.5, 0.5, 0.5), (0.5, 0.5, 0.5)),
+                transforms.Normalize((0.5, 0.5, 0.5), (0.5, 0.5, 0.5)),
             ]), partial=partial), batch_size=batch_size, shuffle=True)
 
     elif domain == "webcam":
         loader = torch.utils.data.DataLoader(Webcam(
             transform=transforms.Compose([
-                transforms.Resize(100),
+                transforms.CenterCrop(224),
+                transforms.RandomHorizontalFlip(),
                 transforms.ToTensor(),
-                #transforms.Normalize((0.5, 0.5, 0.5), (0.5, 0.5, 0.5)),
+                transforms.Normalize((0.5, 0.5, 0.5), (0.5, 0.5, 0.5)),
             ]), partial=partial), batch_size=batch_size, shuffle=True)
 
     elif domain == "dslr":
         loader = torch.utils.data.DataLoader(DSLR(
             transform=transforms.Compose([
-                transforms.Resize(100),
+                transforms.CenterCrop(224),
+                transforms.RandomHorizontalFlip(),
                 transforms.ToTensor(),
-                #transforms.Normalize((0.5, 0.5, 0.5), (0.5, 0.5, 0.5)),
+                transforms.Normalize((0.5, 0.5, 0.5), (0.5, 0.5, 0.5)),
             ]), partial=partial), batch_size=batch_size, shuffle=True)
 
     return loader
@@ -175,8 +176,7 @@ class Amazon(Dataset):
     def __getitem__(self, index):
 
         data, label = self.data[index], self.label[index]
-        data *= 255.0
-        data = Image.fromarray(np.uint8(data), mode="RGB")
+        data = Image.fromarray(np.uint8(data*255.0), mode="RGB")
 
         if self.transform is not None:
             data = self.transform(data)
@@ -201,17 +201,16 @@ class Webcam(Dataset):
         self.target_transform = target_transform
 
         if self.partial:
-            amazon = np.load(os.path.join(self.root, "webcam10.npz"))
+            webcam = np.load(os.path.join(self.root, "webcam10.npz"))
         else:
-            amazon = np.load(os.path.join(self.root, "webcam31.npz"))
+            webcam = np.load(os.path.join(self.root, "webcam31.npz"))
 
-        self.data, self.label = amazon["data"], amazon["label"]
+        self.data, self.label = webcam["data"], webcam["label"]
 
     def __getitem__(self, index):
 
         data, label = self.data[index], self.label[index]
-        data *= 255.0
-        data = Image.fromarray(np.uint8(data), mode="RGB")
+        data = Image.fromarray(np.uint8(data*255.0), mode="RGB")
 
         if self.transform is not None:
             data = self.transform(data)
@@ -236,17 +235,23 @@ class DSLR(Dataset):
         self.target_transform = target_transform
 
         if self.partial:
-            amazon = np.load(os.path.join(self.root, "dslr10.npz"))
+            dslr = np.load(os.path.join(self.root, "dslr10.npz"))
         else:
-            amazon = np.load(os.path.join(self.root, "dslr31.npz"))
+            dslr = np.load(os.path.join(self.root, "dslr31.npz"))
 
-        self.data, self.label = amazon["data"], amazon["label"]
+        self.data, self.label = dslr["data"], dslr["label"]
+
+        """
+        id = np.random.randint(len(self.label))
+        plt.imshow(self.data[id])
+        plt.show()
+        exit()
+        """
 
     def __getitem__(self, index):
 
         data, label = self.data[index], self.label[index]
-        data *= 255.0
-        data = Image.fromarray(np.uint8(data), mode="RGB")
+        data = Image.fromarray(np.uint8(data*255.0), mode="RGB")
 
         if self.transform is not None:
             data = self.transform(data)
@@ -262,6 +267,12 @@ class DSLR(Dataset):
 
 if __name__ == "__main__":
 
-    f = MNISTM()
+    f = get_office_loader("webcam", partial=False)
     for idx, data in enumerate(f):
         img, label = data
+
+        fig = plt.figure()
+        grid = utils.make_grid(img)
+        plt.imshow(grid.numpy().transpose((1, 2, 0)))
+        plt.show()
+        exit()
