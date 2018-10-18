@@ -4,3 +4,6 @@
 *.pkl
 test.py
 WADA_2_channel.py
+Untitled.ipynb
+.ipynb_checkpoints/Untitled-checkpoint.ipynb
+plot_original.py

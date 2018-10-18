@@ -278,9 +278,17 @@ if __name__ == "__main__":
             transforms.Normalize((0.5, 0.5, 0.5), (0.5, 0.5, 0.5))
         ])), batch_size=batch_size, shuffle=True)
 
+
+
+
     target_loader = torch.utils.data.DataLoader(MNISTM(
         transform=transforms.Compose([
             transforms.Resize(28),
+            tnsforms.Normalize((0.5, 0.5, 0.5), (0.5, 0.5, 0.5))
+        ])), batch_size=batch_size, shuffle=True)
+
+    target_loader = torch.utils.data.DataLoader(MNISTM(
+        transform=transforms.Compose([
             transforms.ToTensor(),
             transforms.Normalize((0.5, 0.5, 0.5), (0.5, 0.5, 0.5)),
         ])), batch_size=batch_size, shuffle=True)

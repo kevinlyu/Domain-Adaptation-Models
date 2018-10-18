@@ -216,12 +216,13 @@ class DANN:
 
 if __name__ == "__main__":
 
-    batch_size = 100
+    batch_size = 50
     total_epoch = 200
     # total_epoch = 250
     feature_dim = 1000
     class_num = 10
     log_interval = 10
+    partial = True
 
     source_loader = torch.utils.data.DataLoader(datasets.MNIST(
         "../dataset/mnist/", train=True, download=True,
@@ -235,7 +236,7 @@ if __name__ == "__main__":
             transforms.Resize(28),
             transforms.ToTensor(),
             transforms.Normalize((0.5, 0.5, 0.5), (0.5, 0.5, 0.5)),
-        ]), train=True, partial=True), batch_size=batch_size, shuffle=True)
+        ]), train=True, partial=partial), batch_size=batch_size, shuffle=True)
 
     test_src_loader = torch.utils.data.DataLoader(datasets.MNIST(
         "../dataset/mnist/", train=False, download=True,
@@ -249,7 +250,7 @@ if __name__ == "__main__":
             transforms.Resize(28),
             transforms.ToTensor(),
             transforms.Normalize((0.5, 0.5, 0.5), (0.5, 0.5, 0.5)),
-        ]), train=False, partial=True),  batch_size=batch_size, shuffle=True)
+        ]), train=False, partial=partial),  batch_size=batch_size, shuffle=True)
 
     extractor = Extractor_new(encoded_dim=feature_dim).cuda()
     classifier = Classifier(encoded_dim=feature_dim,
@@ -277,9 +278,9 @@ if __name__ == "__main__":
     model = DANN(components, optimizers, dataloaders,
                  criterions, total_epoch, feature_dim, class_num, log_interval)
 
-    model.train()
-    model.save_model()
-    model.load_model()
-    model.test()
+    #model.train()
+    #model.save_model()
+    #model.load_model()
+    #model.test()
     model.visualize(dim=2)
     # model.visualize(dim=3)
