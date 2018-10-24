@@ -38,8 +38,8 @@ class WADA_II:
         self.log_interval = log_interval
         self.class_num = class_num
         self.img_size = 28
-        self.d_iter = 3
-        self.r_iter = 1
+        self.d_iter = 5
+        self.r_iter = 3
 
     def train(self):
         print("[Training]")
@@ -68,10 +68,10 @@ class WADA_II:
                 tar_data, tar_label = tar_data.cuda(), tar_label.cuda()
 
                 """ train classifer """
-                #set_requires_grad(self.src_extractor, requires_grad=True)
-                #set_requires_grad(self.tar_extractor, requires_grad=True)
-                #set_requires_grad(self.relater, requires_grad=False)
-                #set_requires_grad(self.discriminator, requires_grad=False)
+                set_requires_grad(self.src_extractor, requires_grad=True)
+                set_requires_grad(self.tar_extractor, requires_grad=True)
+                set_requires_grad(self.relater, requires_grad=False)
+                set_requires_grad(self.discriminator, requires_grad=False)
 
                 src_z = self.src_extractor(src_data)
                 tar_z = self.tar_extractor(tar_data)
@@ -84,14 +84,10 @@ class WADA_II:
                     src_z).mean() - self.discriminator(tar_z).mean()
                 '''
 
-                rs = self.relater(src_z).detach()
-                rt = self.relater(tar_z).detach()
-
                 wasserstein_distance = self.discriminator(
-                    rt/rs*src_z).mean() - self.discriminator(tar_z).mean()
+                    src_z).mean() - self.discriminator(tar_z).mean()
 
-                loss = class_loss + 10*wasserstein_distance + \
-                    EntropyLoss(self.classifier(tar_z)).mean()
+                loss = 10*class_loss + wasserstein_distance
 
                 c_opt.zero_grad()
                 loss.backward()
@@ -104,16 +100,16 @@ class WADA_II:
 
                 """ Validate Accuracy """
                 with torch.no_grad():
-                    pred_class_tar = self.classifier(tar_z)
+                    pred_class_tar = self.classifier(tar_z.detach())
                     _, predicted_tar = torch.max(pred_class_tar, 1)
                     accuracy_tar = 100.0 * \
                         (predicted_tar == tar_label).sum()/tar_data.size(0)
 
                 """ train relater """
-                #set_requires_grad(self.src_extractor, requires_grad=False)
-                #set_requires_grad(self.tar_extractor, requires_grad=False)
-                #set_requires_grad(self.relater, requires_grad=True)
-                #set_requires_grad(self.discriminator, requires_grad=False)
+                set_requires_grad(self.src_extractor, requires_grad=False)
+                set_requires_grad(self.tar_extractor, requires_grad=False)
+                set_requires_grad(self.relater, requires_grad=True)
+                set_requires_grad(self.discriminator, requires_grad=False)
 
                 with torch.no_grad():
                     src_z = self.src_extractor(src_data).detach()
@@ -136,10 +132,10 @@ class WADA_II:
 
                 """ train discriminator """
 
-                #set_requires_grad(self.src_extractor, requires_grad=False)
-                #set_requires_grad(self.tar_extractor, requires_grad=False)
-                #set_requires_grad(self.relater, requires_grad=False)
-                #set_requires_grad(self.discriminator, requires_grad=True)
+                set_requires_grad(self.src_extractor, requires_grad=False)
+                set_requires_grad(self.tar_extractor, requires_grad=False)
+                set_requires_grad(self.relater, requires_grad=False)
+                set_requires_grad(self.discriminator, requires_grad=True)
 
                 with torch.no_grad():
                     src_z = self.src_extractor(src_data)
@@ -152,7 +148,7 @@ class WADA_II:
                     rt = self.relater(tar_z).detach()
 
                     wasserstein_distance = self.discriminator(
-                        rt/rs*src_z).mean() - self.discriminator(tar_z).mean()
+                        src_z).mean() - self.discriminator(tar_z).mean()
 
                     domain_loss = -wasserstein_distance + 10*gp
                     d_opt.zero_grad()
@@ -314,11 +310,12 @@ class WADA_II:
 if __name__ == "__main__":
     print("WADA model dev ver digit")
 
+    # fix small batch size (about 50) here
     batch_size = 50
     total_epoch = 100
     class_num = 10
     log_interval = 10
-    partial = False
+    partial = True
 
     source_loader = torch.utils.data.DataLoader(datasets.MNIST(
         "../dataset/mnist/", train=True, download=True,
@@ -328,7 +325,7 @@ if __name__ == "__main__":
             transforms.Normalize((0.5, 0.5, 0.5), (0.5, 0.5, 0.5))
         ])), batch_size=batch_size, shuffle=True)
 
-    target_loader = torch.utils.data.DataLoader(USPS(
+    target_loader = torch.utils.data.DataLoader(MNISTM(
         transform=transforms.Compose([
             transforms.Resize(28),
             transforms.ToTensor(),
@@ -343,7 +340,7 @@ if __name__ == "__main__":
             transforms.Normalize((0.5, 0.5, 0.5), (0.5, 0.5, 0.5)),
         ])), batch_size=batch_size, shuffle=True)
 
-    test_tar_loader = torch.utils.data.DataLoader(USPS(
+    test_tar_loader = torch.utils.data.DataLoader(MNISTM(
         transform=transforms.Compose([
             transforms.Resize(28),
             transforms.ToTensor(),
