@@ -20,6 +20,9 @@ def visualize_2d(save_path, embedding, label, domain, class_num):
         ax.scatter(xx[label == i], yy[label == i],
                    color=colors[i], s=10)
 
+    for i in range(embedding.shape[0]):
+        plt.text(xx[i], yy[i], str(label[i]), fontdict={"size": 10})
+
     ax.xaxis.set_major_formatter(NullFormatter())
     ax.yaxis.set_major_formatter(NullFormatter())
     plt.axis('tight')
@@ -34,8 +37,11 @@ def visualize_2d(save_path, embedding, label, domain, class_num):
     colors = cm.rainbow(np.linspace(0.0, 1.0, class_num))
 
     for i in range(2):
-        ax.scatter(xx[domain == i], yy[domain == i],
-                   color=cm.bwr(i/1.), s=10)
+        ax.scatter(xx[domain == i], yy[domain == i], color=cm.bwr(i/1.), s=10)
+
+    for i in range(embedding.shape[0]):
+        plt.text(xx[i], yy[i], str(int(domain[i])), fontdict={
+                 "size": 10}, color=cm.bwr(domain[i]/1.))
 
     ax.xaxis.set_major_formatter(NullFormatter())
     ax.yaxis.set_major_formatter(NullFormatter())

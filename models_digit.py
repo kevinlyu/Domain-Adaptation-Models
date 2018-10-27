@@ -50,7 +50,7 @@ class Classifier_Digit(nn.Module):
             nn.ReLU(),
             nn.Dropout(),
             nn.Linear(64, self.class_num),
-            nn.LogSoftmax(1)
+            nn.Softmax(1)
         )
 
     def forward(self, x):

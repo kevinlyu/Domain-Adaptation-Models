@@ -79,13 +79,12 @@ class WADA_II:
                 pred_class = self.classifier(src_z)
                 class_loss = self.class_criterion(pred_class, src_label)
 
-                '''
-                wasserstein_diatance = self.discriminator(
-                    src_z).mean() - self.discriminator(tar_z).mean()
-                '''
+                rs = self.relater(src_z)
+                rs = 1-rs
+                rs = rs/rs.sum()
 
                 wasserstein_distance = self.discriminator(
-                    src_z).mean() - self.discriminator(tar_z).mean()
+                    rs*src_z).mean() - self.discriminator(rs*tar_z).mean()
 
                 loss = 10*class_loss + wasserstein_distance
 
@@ -144,11 +143,12 @@ class WADA_II:
                 for _ in range(self.d_iter):
                     gp = gradient_penalty(self.discriminator, src_z, tar_z)
 
-                    rs = self.relater(src_z).detach()
-                    rt = self.relater(tar_z).detach()
+                    rs = self.relater(src_z)
+                    rs = 1-rs
+                    rs = rs/rs.sum()
 
                     wasserstein_distance = self.discriminator(
-                        src_z).mean() - self.discriminator(tar_z).mean()
+                        rs*src_z).mean() - self.discriminator(rs*tar_z).mean()
 
                     domain_loss = -wasserstein_distance + 10*gp
                     d_opt.zero_grad()
@@ -160,13 +160,6 @@ class WADA_II:
                         epoch, loss+r_loss+domain_loss, class_loss, r_loss, domain_loss))
                     print("Source Accuracy: {:.2f}".format(accuracy))
                     print("Target Accuracy: {:.2f}\n".format(accuracy_tar))
-
-                    """
-                    print("rs mean = {:.3f} max = {:.3f}, min = {:.3f}".format(
-                        rs.mean(), rs.max(), rs.min()))
-                    print("rt mean = {:.3f} max = {:.3f}, min = {:.3f}\n".format(
-                        rt.mean(), rt.max(), rt.min()))
-                    """
 
     def test(self):
         print("[Testing]")
@@ -325,7 +318,7 @@ if __name__ == "__main__":
             transforms.Normalize((0.5, 0.5, 0.5), (0.5, 0.5, 0.5))
         ])), batch_size=batch_size, shuffle=True)
 
-    target_loader = torch.utils.data.DataLoader(MNISTM(
+    target_loader = torch.utils.data.DataLoader(USPS(
         transform=transforms.Compose([
             transforms.Resize(28),
             transforms.ToTensor(),
@@ -340,7 +333,7 @@ if __name__ == "__main__":
             transforms.Normalize((0.5, 0.5, 0.5), (0.5, 0.5, 0.5)),
         ])), batch_size=batch_size, shuffle=True)
 
-    test_tar_loader = torch.utils.data.DataLoader(MNISTM(
+    test_tar_loader = torch.utils.data.DataLoader(USPS(
         transform=transforms.Compose([
             transforms.Resize(28),
             transforms.ToTensor(),
@@ -375,8 +368,8 @@ if __name__ == "__main__":
 
     model = WADA_II(components, optimizers, dataloaders, criterions,
                     total_epoch, class_num, log_interval)
-    model.train()
-    model.save_model()
+    #odel.train()
+    #model.save_model()
     model.load_model()
-    model.test()
-    model.visualize(dim=2, plot_num=3000)
+    #model.test()
+    model.visualize(dim=2, plot_num=1000)
