@@ -84,7 +84,7 @@ class WADA_II:
                 rs = rs/rs.sum()
 
                 wasserstein_distance = self.discriminator(
-                    rs*src_z).mean() - self.discriminator(rs*tar_z).mean()
+                    src_z).mean() - self.discriminator(tar_z).mean()
 
                 loss = 10*class_loss + wasserstein_distance
 
@@ -148,7 +148,7 @@ class WADA_II:
                     rs = rs/rs.sum()
 
                     wasserstein_distance = self.discriminator(
-                        rs*src_z).mean() - self.discriminator(rs*tar_z).mean()
+                        src_z).mean() - self.discriminator(tar_z).mean()
 
                     domain_loss = -wasserstein_distance + 10*gp
                     d_opt.zero_grad()
@@ -308,7 +308,7 @@ if __name__ == "__main__":
     total_epoch = 100
     class_num = 10
     log_interval = 10
-    partial = True
+    partial = False
 
     source_loader = torch.utils.data.DataLoader(datasets.MNIST(
         "../dataset/mnist/", train=True, download=True,
@@ -368,8 +368,8 @@ if __name__ == "__main__":
 
     model = WADA_II(components, optimizers, dataloaders, criterions,
                     total_epoch, class_num, log_interval)
-    #odel.train()
-    #model.save_model()
+    model.train()
+    model.save_model()
     model.load_model()
-    #model.test()
+    model.test()
     model.visualize(dim=2, plot_num=1000)
