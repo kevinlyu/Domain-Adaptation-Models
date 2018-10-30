@@ -79,7 +79,7 @@ class WADA_II:
                 pred_class = self.classifier(src_z)
                 class_loss = self.class_criterion(pred_class, src_label)
 
-                rs = self.relater(src_z)
+                rs = self.relater(src_z.detach())
                 rs = 1-rs
                 rs = rs/rs.sum()
 
@@ -143,7 +143,7 @@ class WADA_II:
                 for _ in range(self.d_iter):
                     gp = gradient_penalty(self.discriminator, src_z, tar_z)
 
-                    rs = self.relater(src_z)
+                    rs = self.relater(src_z.detach())
                     rs = 1-rs
                     rs = rs/rs.sum()
 
